@@ -67,6 +67,10 @@ The agent uses a system prompt defined in `system_prompt.md`. You can modify thi
 
 All interactions are logged in `.chat.history` for reference.
 
+## Warning
+
+This is an experimental implementation of a coding agent. It executes Python code locally and has access to the file system within the working directory. Use with caution, as executing untrusted code can lead to unintended consequences, including data loss or security vulnerabilities. Always review the code and ensure it is safe before execution.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
