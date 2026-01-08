@@ -45,4 +45,23 @@ tools = [
             "required": ["dir_path"],
         },
     },
+    {
+        "type": "function",
+        "name": "write_file",
+        "description": "Write the specified content to the specified file, constrained to the working directory. If the file already exists, it is overwritten.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "The file to write the content to, relative to the working directory.",
+                },
+                "content": {
+                    "type": "string",
+                    "description": "The content to write to the file.",
+                },
+            },
+            "required": ["file_path", "content"],
+        },
+    },
 ]
