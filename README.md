@@ -55,7 +55,8 @@ The agent supports the following commands (all starting with `/`):
 * `/exit`: Exit the program
 * `/file <filename>`: Read the content of `<filename>` and treat it as a user query
 * `/help`: Print a help message
-* `/verbose [0,1]`: Set verbose mode on (1) or off (0)
+* `/use_functions [0,1]` : turn the ability to use functions on (1) or off (0) (default: on)
+* `/verbose [0,1]`: Set verbose mode on (1) or off (0) (default: off)
 * `/wd <directory>`: Change the working directory
 
 ### System Prompt
