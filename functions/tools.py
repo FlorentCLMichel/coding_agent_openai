@@ -15,4 +15,19 @@ tools = [
             "required": ["directory"],
         },
     },
+    {
+        "type": "function",
+        "name": "get_file_content",
+        "description": "Read the content of the specified file, constrained to the working directory.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "Path to the file whose content should be read, relative to the working directory.",
+                },
+            },
+            "required": ["file_path"],
+        },
+    },
 ]
