@@ -2,7 +2,11 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from os import environ
 
+import json
 import readline
+
+from functions.interface import call_function
+from functions.tools import tools
 
 PROMPT_PREFIX = "❯ "
 
@@ -10,13 +14,18 @@ HELP_MESSAGE = '''Available commands:
   /exit leave the chat
   /file load prompt from a file
   /help print this help message
+  /verbose [0,1] turn verbose mode on (1) or off (0)
+  /wd <directory> change the working directory
 '''
 
 def read_file(fine_name):
     with open(fine_name, "r") as file:
         return file.read()
 
+
 def main():
+    working_directory="test"
+    verbose=False
 
     load_dotenv()
     model = environ.get("MODEL")
@@ -28,7 +37,9 @@ def main():
 
     system_prompt = read_file("system_prompt.md")
     messages = [{"role": "system", "content": system_prompt}]
-
+     
+    input_list = [{"role": "system", "content": system_prompt}]
+    
     with open(".chat.history", "a") as history_file:
         while True:
             user_query = input(PROMPT_PREFIX).strip()
@@ -41,25 +52,47 @@ def main():
                     continue
                 case '/file':
                     user_query = read_file(user_query_split[1])
-
+                case '/verbose':
+                    verbose = bool(user_query_split[1])
+                    print(f"SYSTEM: Verbose mode {verbose}")
+                    continue
+                case '/wd':
+                    working_directory = user_query_split[1]
+                    print(f"SYSTEM: New working directory: {working_directory}")
+                    continue
+            
             history_file.write(PROMPT_PREFIX + user_query + '\n')
-            messages.append({"role": "user", "content": user_query})
-            
-            try:
-                response = client.chat.completions.create(
-                  model=model,
-                  messages=messages,
-                )
-            except Exception as e: 
-                print(f"ERROR: {e}")
-                exit(1)
-            
-            reply = response.choices[0].message
-            reply_content = '\n' + reply.content + '\n'
-            history_file.write(reply_content + '\n')
-            messages.append({"role": "assistant", "content": reply_content})
-            print(reply_content)
-
+            input_list.append({"role": "user", "content": user_query})
+    
+            reasoning = True
+            while reasoning:
+                reasoning = False
+                try:
+                    response = client.responses.create(
+                        model=model,
+                        tools=tools,
+                        input=input_list,
+                    )
+                except Exception as e: 
+                    print(f"ERROR: {e}")
+                    exit(1)
+    
+                input_list += response.output
+    
+                for item in response.output:
+                    if item.type == "function_call":
+                        reasoning = True
+                        output = call_function(item.name, item.arguments, verbose=verbose, working_directory=working_directory)
+                        input_list.append({
+                            "type": "function_call_output",
+                            "call_id": item.call_id,
+                            "output": json.dumps({
+                              "outout": output
+                            })
+                        })
+             
+            history_file.write('\n' + response.output_text + '\n\n')
+            print('\n' + response.output_text + '\n')
 
 if __name__ == "__main__":
     main()
