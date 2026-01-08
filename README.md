@@ -27,3 +27,5 @@ User input will be sent to the model, except if the first word is one of the fol
 * `/exit`: exit the program
 * `/file <filename>`: read the content of `<filename>` and treat is as user query
 * `/help`: print a help message
+* `/verbose [0,1]`: set verbose mode on (1) or off (0)
+*  `/wd <directory>`: change the working directory

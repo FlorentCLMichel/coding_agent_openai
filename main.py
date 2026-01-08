@@ -11,11 +11,11 @@ from functions.tools import tools
 PROMPT_PREFIX = "❯ "
 
 HELP_MESSAGE = '''Available commands:
-  /exit leave the chat
-  /file load prompt from a file
-  /help print this help message
-  /verbose [0,1] turn verbose mode on (1) or off (0)
-  /wd <directory> change the working directory
+  /exit : leave the chat
+  /file : load prompt from a file
+  /help : print this help message
+  /verbose [0,1] : turn verbose mode on (1) or off (0)
+  /wd <directory> : change the working directory
 '''
 
 def read_file(fine_name):
