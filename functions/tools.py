@@ -83,4 +83,22 @@ tools = [
             "required": ["source_path", "dest_path"],
         },
     },
+    {
+        "type": "function",
+        "name": "run_python_file",
+        "description": "Run the Python script in the specified file, constrained to the working directory.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "The file to execute, relative to the working directory.",
+                },
+                "args": {
+                    "type": "string",
+                    "description": "Space-separated list of arguments passed to the script.",
+                },
+            },
+        },
+    },
 ]

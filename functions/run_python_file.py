@@ -1,7 +1,7 @@
 from functions.utils import *
 import subprocess
 
-def run_python_file(working_directory, file_path, args=[]) -> str:
+def run_python_file(working_directory, file_path, args="") -> str:
     file_path = os.path.join(working_directory, file_path)
     if not path_is_parent(working_directory, file_path):
         return f'ERROR: Cannot execute "{file_path}" as it is outside the permitted working directory {working_directory}'
@@ -12,7 +12,7 @@ def run_python_file(working_directory, file_path, args=[]) -> str:
     try:
         commands = ["python", file_path]
         if args:
-            commands.extend(args)
+            commands.extend(args.split())
         result = subprocess.run(
             commands,
             capture_output=True,
