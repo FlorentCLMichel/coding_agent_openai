@@ -1,4 +1,0 @@
-dateutil=2.9.0
-dotenv=0.9.9
-openai=2.14.0
-
