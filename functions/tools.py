@@ -30,4 +30,19 @@ tools = [
             "required": ["file_path"],
         },
     },
+    {
+        "type": "function",
+        "name": "create_dir",
+        "description": "Create a new directory within the working directory.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "dir_path": {
+                    "type": "string",
+                    "description": "Path to the new directory, relative to the working directory.",
+                },
+            },
+            "required": ["dir_path"],
+        },
+    },
 ]
