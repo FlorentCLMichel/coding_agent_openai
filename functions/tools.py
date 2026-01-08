@@ -64,4 +64,23 @@ tools = [
             "required": ["file_path", "content"],
         },
     },
+    {
+        "type": "function",
+        "name": "move_file",
+        "description": "Move a file to a different location, constrained to the working directory.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "source_path": {
+                    "type": "string",
+                    "description": "The original location of the file, relative to the working directory.",
+                },
+                "dest_path": {
+                    "type": "string",
+                    "description": "Destination for the file, relative to the working directory.",
+                },
+            },
+            "required": ["source_path", "dest_path"],
+        },
+    },
 ]
