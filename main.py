@@ -54,11 +54,11 @@ def main():
                     user_query = read_file(user_query_split[1])
                 case '/verbose':
                     verbose = bool(user_query_split[1])
-                    print(f"SYSTEM: Verbose mode {verbose}")
+                    print(f"→ Verbose mode {verbose}")
                     continue
                 case '/wd':
                     working_directory = user_query_split[1]
-                    print(f"SYSTEM: New working directory: {working_directory}")
+                    print(f"→ New working directory: {working_directory}")
                     continue
             
             history_file.write(PROMPT_PREFIX + user_query + '\n')
