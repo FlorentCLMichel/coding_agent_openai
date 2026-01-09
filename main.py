@@ -19,8 +19,8 @@ HELP_MESSAGE = '''Available commands:
   /wd <directory> : change the working directory
 '''
 
-def read_file(fine_name):
-    with open(fine_name, "r") as file:
+def read_file(file_name):
+    with open(file_name, "r") as file:
         return file.read()
 
 
@@ -38,8 +38,6 @@ def main():
     )
 
     system_prompt = read_file("system_prompt.md")
-    messages = [{"role": "system", "content": system_prompt}]
-     
     input_list = [{"role": "system", "content": system_prompt}]
     
     with open(".chat.history", "a") as history_file:
@@ -110,7 +108,7 @@ def main():
                                 "type": "function_call_output",
                                 "call_id": item.call_id,
                                 "output": json.dumps({
-                                  "outout": output
+                                  "output": output
                                 })
                             })
              

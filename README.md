@@ -2,6 +2,10 @@
 
 This project implements a simple coding agent using the OpenAI Python API. The agent can interact with users, execute commands, and perform tasks based on the provided system prompt.
 
+## Warning
+
+This is an experimental implementation of a coding agent. It executes Python code locally and has access to the file system within the working directory. Use with caution, as executing untrusted code can lead to unintended consequences, including data loss or security vulnerabilities. Always review the code and ensure it is safe before execution.
+
 ## Features
 
 - Interactive chat interface with the OpenAI model
@@ -66,10 +70,6 @@ The agent uses a system prompt defined in `system_prompt.md`. You can modify thi
 ### Chat History
 
 All interactions are logged in `.chat.history` for reference.
-
-## Warning
-
-This is an experimental implementation of a coding agent. It executes Python code locally and has access to the file system within the working directory. Use with caution, as executing untrusted code can lead to unintended consequences, including data loss or security vulnerabilities. Always review the code and ensure it is safe before execution.
 
 ## License
 
