@@ -19,9 +19,16 @@ HELP_MESSAGE = '''Available commands:
   /wd <directory> : change the working directory
 '''
 
-def read_file(file_name):
+def read_file(file_name: str) -> str :
     with open(file_name, "r") as file:
         return file.read()
+
+def load_env_var(var: str, store: dict):
+    var_up = var.upper()
+    store[var] = environ.get(var_up)
+    if not store[var]:
+        print(f"→ ERROR: Environment variable " + var_up + " not set")
+        exit(1)
 
 
 def main():
@@ -30,12 +37,19 @@ def main():
     use_functions=True
 
     load_dotenv()
-    model = environ.get("MODEL")
+    variables = {}
+    load_env_var("model", variables)
+    load_env_var("base_url", variables)
+    load_env_var("api_key", variables)
 
-    client = OpenAI(
-      base_url=environ.get("BASE_URL"),
-      api_key=environ.get("API_KEY"),
-    )
+    try:
+        client = OpenAI(
+          base_url=variables["base_url"],
+          api_key=variables["api_key"],
+        )
+    except Exception as e: 
+        print(f"→ ERROR: Could not set-up the client: {e}")
+        exit(1)
 
     system_prompt = read_file("system_prompt.md")
     input_list = [{"role": "system", "content": system_prompt}]
@@ -89,12 +103,12 @@ def main():
                 reasoning = False
                 try:
                     response = client.responses.create(
-                        model=model,
+                        model=variables["model"],
                         tools= tools if use_functions else [],
                         input=input_list,
                     )
                 except Exception as e: 
-                    print(f"ERROR: {e}")
+                    print(f"→ ERROR: {e}")
                     exit(1)
     
                 input_list += response.output
