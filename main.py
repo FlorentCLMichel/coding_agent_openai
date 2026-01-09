@@ -58,6 +58,8 @@ def main():
         while True:
             user_query = input(PROMPT_PREFIX).strip()
             user_query_split = user_query.split()
+            if not user_query_split:
+                continue
             match user_query_split[0]: 
                 case '/exit':
                     exit(0)
