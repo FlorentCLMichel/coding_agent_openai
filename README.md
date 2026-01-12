@@ -6,6 +6,16 @@ This project implements a simple coding agent using the OpenAI Python API. The a
 
 This is an experimental implementation of a coding agent. It executes Python code locally and has access to the file system within the working directory. Use with caution, as executing untrusted code can lead to unintended consequences, including data loss or security vulnerabilities. Always review the code and ensure it is safe before execution.
 
+**Risks:**
+- Unintended file deletion or modification.
+- Exposure of sensitive data.
+- Execution of malicious code.
+
+**Best Practices:**
+- Run the agent in a sandboxed environment.
+- Review all code before execution.
+- Avoid using the agent with sensitive or production data.
+
 ## Features
 
 - Interactive chat interface with the OpenAI model
@@ -39,8 +49,19 @@ MODEL=mistralai/devstral-2512:free
 
 ### Installation
 
-1. Clone this repository
-2. Install the required dependencies:
+1. Clone this repository:
+   ```bash
+   git clone <repository-url>
+   cd <repository-directory>
+   ```
+
+2. Create and activate a virtual environment (optional but recommended):
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+   ```
+
+3. Install the required dependencies:
    ```bash
    pip install -r requirements.txt
    ```
@@ -73,4 +94,4 @@ All interactions are logged in `.chat.history` for reference.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
