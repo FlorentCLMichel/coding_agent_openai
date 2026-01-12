@@ -1,14 +1,20 @@
 from dotenv import load_dotenv
 from openai import OpenAI
-from os import environ
+from os import environ, path
 
 import json
 import readline
 
+from prompt_toolkit import prompt
+from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.history import FileHistory
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.styles import Style
+
 from functions.interface import call_function
 from functions.tools import tools
 
-PROMPT_PREFIX = "❯ "
+PROMPT_PREFIX = "\u276f "
 
 HELP_MESSAGE = '''Available commands:
   /exit : leave the chat
@@ -19,7 +25,18 @@ HELP_MESSAGE = '''Available commands:
   /wd <directory> : change the working directory
 '''
 
-def read_file(file_name: str) -> str :
+commands = [
+    '/exit', '/file', '/help', '/use_functions', '/verbose', '/wd'
+]
+
+command_completer = WordCompleter(commands)
+
+custom_style = Style.from_dict({
+    'prompt': '#ffffff',
+    'input': '#ffffff',
+})
+
+def read_file(file_name: str) -> str:
     with open(file_name, "r") as file:
         return file.read()
 
@@ -27,14 +44,14 @@ def load_env_var(var: str, store: dict):
     var_up = var.upper()
     store[var] = environ.get(var_up)
     if not store[var]:
-        print(f"→ ERROR: Environment variable " + var_up + " not set")
+        print(f"\u2192 ERROR: Environment variable " + var_up + " not set")
         exit(1)
 
 
 def main():
-    working_directory="test"
-    verbose=False
-    use_functions=True
+    working_directory = "test"
+    verbose = False
+    use_functions = True
 
     load_dotenv()
     variables = {}
@@ -44,23 +61,42 @@ def main():
 
     try:
         client = OpenAI(
-          base_url=variables["base_url"],
-          api_key=variables["api_key"],
+            base_url=variables["base_url"],
+            api_key=variables["api_key"],
         )
-    except Exception as e: 
-        print(f"→ ERROR: Could not set-up the client: {e}")
+        client.models.list()  # Example call to test the connection
+    except Exception as e:
+        print(f"\u2192 ERROR: Could not set-up the client: {e}")
         exit(1)
 
     system_prompt = read_file("system_prompt.md")
     input_list = [{"role": "system", "content": system_prompt}]
-    
+
+    # Initialize prompt_toolkit history
+    history = FileHistory('.chat_history')
+
     with open(".chat.history", "a") as history_file:
         while True:
-            user_query = input(PROMPT_PREFIX).strip()
+            try:
+                # Use prompt_toolkit for user input
+                user_query = prompt(
+                    PROMPT_PREFIX,
+                    completer=command_completer,
+                    history=history,
+                    auto_suggest=AutoSuggestFromHistory(),
+                    style=custom_style,
+                    complete_while_typing=True
+                ).strip()
+            except KeyboardInterrupt:
+                continue  # Handle Ctrl+C gracefully
+            except EOFError:
+                break  # Handle Ctrl+D gracefully
+
             user_query_split = user_query.split()
             if not user_query_split:
                 continue
-            match user_query_split[0]: 
+
+            match user_query_split[0]:
                 case '/exit':
                     exit(0)
                 case '/help':
@@ -68,68 +104,90 @@ def main():
                     continue
                 case '/file':
                     try:
-                        user_query = read_file(user_query_split[1])
-                    except Exception as e: 
-                        print(f"→ Could not parse the query: {e}")
+                        fname = user_query_split[1]
+                        user_query = read_file(fname)
+                    except FileNotFoundError:
+                        print(f"\u279c ERROR: File not found: {fname}")
+                        continue
+                    except PermissionError:
+                        print(f"\u279c ERROR: Permission denied for file: {fname}")
+                        continue
+                    except Exception as e:
+                        print(f"\u279c ERROR: Unexpected error while reading file: {e}")
                         continue
                 case '/use_functions':
                     try:
+                        if len(user_query_split) < 2:
+                            raise ValueError("Missing argument for /use_functions")
                         use_functions = bool(int(user_query_split[1]))
-                        print(f"→ Ability to use functions {use_functions}")
-                    except Exception as e: 
-                        print(f"→ Could not parse the input: {e}")
+                        print(f"\u279c Ability to use functions {use_functions}")
+                    except ValueError as e:
+                        print(f"\u279c ERROR: Invalid input for /use_functions: {e}")
                         continue
                     continue
                 case '/verbose':
                     try:
+                        if len(user_query_split) < 2:
+                            raise ValueError("Missing argument for /verbose")
                         verbose = bool(int(user_query_split[1]))
-                        print(f"→ Verbose mode {verbose}")
-                    except Exception as e: 
-                        print(f"→ Could not parse the input: {e}")
+                        print(f"\u2192 Verbose mode {verbose}")
+                    except ValueError as e:
+                        print(f"\u279c ERROR: Invalid input for /verbose: {e}")
                         continue
                     continue
                 case '/wd':
                     try:
-                        working_directory = user_query_split[1]
-                        print(f"→ New working directory: {working_directory}")
-                    except Exception as e: 
-                        print(f"→ Could not parse the input: {e}")
+                        if len(user_query_split) < 2:
+                            raise ValueError("Missing argument for /wd")
+                        new_directory = user_query_split[1]
+                        if not path.isdir(new_directory):
+                            raise FileNotFoundError(f"Directory does not exist: {new_directory}")
+                        working_directory = new_directory
+                        print(f"\u279c New working directory: {working_directory}")
+                    except Exception as e:
+                        print(f"\u279c ERROR: Could not change working directory: {e}")
                         continue
                     continue
-            
+
             history_file.write(PROMPT_PREFIX + user_query + '\n')
             input_list.append({"role": "user", "content": user_query})
-    
+
             reasoning = True
             while reasoning:
                 reasoning = False
                 try:
                     response = client.responses.create(
                         model=variables["model"],
-                        tools= tools if use_functions else [],
+                        tools=tools if use_functions else [],
                         input=input_list,
                     )
-                except Exception as e: 
-                    print(f"→ ERROR: {e}")
+                    if not hasattr(response, "output"):
+                        raise ValueError("Invalid response structure: missing 'output' field")
+                except Exception as e:
+                    print(f"\u2192 ERROR: {e}")
                     exit(1)
-    
+
                 input_list += response.output
-    
+
                 if use_functions:
                     for item in response.output:
-                        if item.type == "function_call":
-                            reasoning = True
-                            output = call_function(item.name, item.arguments, verbose=verbose, working_directory=working_directory)
-                            input_list.append({
-                                "type": "function_call_output",
-                                "call_id": item.call_id,
-                                "output": json.dumps({
-                                  "output": output
-                                })
+                        if not hasattr(item, "type") or item.type != "function_call":
+                            continue
+                        if not hasattr(item, "name") or not hasattr(item, "arguments"):
+                            raise ValueError("Invalid function call structure")
+                        reasoning = True
+                        output = call_function(item.name, item.arguments, verbose=verbose, working_directory=working_directory)
+                        input_list.append({
+                            "type": "function_call_output",
+                            "call_id": item.call_id,
+                            "output": json.dumps({
+                                "output": output
                             })
-             
+                        })
+
             history_file.write('\n' + response.output_text + '\n\n')
             print('\n' + response.output_text + '\n')
+
 
 if __name__ == "__main__":
     main()
