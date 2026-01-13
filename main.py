@@ -6,7 +6,7 @@ import json
 import readline
 
 from prompt_toolkit import prompt
-from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.completion import WordCompleter, Completer, Completion
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.styles import Style
@@ -26,10 +26,20 @@ HELP_MESSAGE = '''Available commands:
 '''
 
 commands = [
-    '/exit', '/file', '/help', '/use_functions', '/verbose', '/wd'
+    '/exit', '/file', '/help', '/use_functions', '/verbose', '/wd',
 ]
 
 command_completer = WordCompleter(commands)
+
+class CustomCompleter(Completer):
+    def __init__(self, word_completer):
+        self.word_completer = word_completer
+
+    def get_completions(self, document, complete_event):
+        if not (' ' in document.text):
+            all_completions = list(self.word_completer.get_completions(document, complete_event))
+            for completion in all_completions:
+                yield completion
 
 custom_style = Style.from_dict({
     'prompt': '#ffffff',
@@ -81,7 +91,7 @@ def main():
                 # Use prompt_toolkit for user input
                 user_query = prompt(
                     PROMPT_PREFIX,
-                    completer=command_completer,
+                    completer=CustomCompleter(command_completer),
                     history=history,
                     auto_suggest=AutoSuggestFromHistory(),
                     style=custom_style,
