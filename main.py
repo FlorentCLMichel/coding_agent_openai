@@ -29,14 +29,14 @@ commands = [
     '/exit', '/file', '/help', '/use_functions', '/verbose', '/wd',
 ]
 
-command_completer = WordCompleter(commands)
+command_completer = WordCompleter(commands, sentence=True)
 
 class CustomCompleter(Completer):
     def __init__(self, word_completer):
         self.word_completer = word_completer
 
     def get_completions(self, document, complete_event):
-        if not (' ' in document.text):
+        if document.text.startswith('/') and not (' ' in document.text):
             all_completions = list(self.word_completer.get_completions(document, complete_event))
             for completion in all_completions:
                 yield completion
