@@ -77,17 +77,16 @@ def handle_help():
 
 def handle_file_command(user_query_split: list):
     try:
+        if len(user_query_split) < 2:
+            raise ValueError("Missing argument for /file")
         fname = user_query_split[1]
         return read_file(fname)
     except FileNotFoundError:
-        print(f"\u279c ERROR: File not found: {fname}")
-        return None
+        raise Exception(f"File not found: {fname}")
     except PermissionError:
-        print(f"\u279c ERROR: Permission denied for file: {fname}")
-        return None
+        raise Exception(f"Permission denied for file: {fname}")
     except Exception as e:
-        print(f"\u279c ERROR: Unexpected error while reading file: {e}")
-        return None
+        raise Exception(f"Unexpected error while reading file: {e}")
 
 def handle_use_functions_command(user_query_split: list):
     try:
@@ -97,8 +96,7 @@ def handle_use_functions_command(user_query_split: list):
         print(f"\u279c Ability to use functions {use_functions}")
         return use_functions
     except ValueError as e:
-        print(f"\u279c ERROR: Invalid input for /use_functions: {e}")
-        return None
+        raise Exception(f"\u279c ERROR: Invalid input for /use_functions: {e}")
 
 def handle_verbose_command(user_query_split: list):
     try:
@@ -108,8 +106,7 @@ def handle_verbose_command(user_query_split: list):
         print(f"\u2192 Verbose mode {verbose}")
         return verbose
     except ValueError as e:
-        print(f"\u279c ERROR: Invalid input for /verbose: {e}")
-        return None
+        raise ValueError(f"Invalid input for /verbose: {e}")
 
 def handle_wd_command(user_query_split: list):
     try:
@@ -121,8 +118,7 @@ def handle_wd_command(user_query_split: list):
         print(f"\u279c New working directory: {new_directory}")
         return new_directory
     except Exception as e:
-        print(f"\u279c ERROR: Could not change working directory: {e}")
-        return None
+        raise Exception(f"ERROR: Could not change working directory: {e}")
 
 def process_user_query(user_query: str, use_functions: bool, verbose: bool, working_directory: str, client, variables: dict, input_list: list):
     reasoning = True
@@ -200,31 +196,27 @@ def main():
             if not user_query_split:
                 continue
 
-            match user_query_split[0]:
-                case '/exit':
-                    handle_exit()
-                case '/help':
-                    handle_help()
-                    continue
-                case '/file':
-                    user_query = handle_file_command(user_query_split)
-                    if user_query is None:
+            try:
+                match user_query_split[0]:
+                    case '/exit':
+                        handle_exit()
+                    case '/help':
+                        handle_help()
                         continue
-                case '/use_functions':
-                    use_functions = handle_use_functions_command(user_query_split)
-                    if use_functions is None:
+                    case '/file':
+                        user_query = handle_file_command(user_query_split)
+                    case '/use_functions':
+                        use_functions = handle_use_functions_command(user_query_split)
                         continue
-                    continue
-                case '/verbose':
-                    verbose = handle_verbose_command(user_query_split)
-                    if verbose is None:
+                    case '/verbose':
+                        verbose = handle_verbose_command(user_query_split)
                         continue
-                    continue
-                case '/wd':
-                    working_directory = handle_wd_command(user_query_split)
-                    if working_directory is None:
+                    case '/wd':
+                        working_directory = handle_wd_command(user_query_split)
                         continue
-                    continue
+            except Exception as e:
+                print(f"→ ERROR: {e}")
+                continue
 
             history_file.write(PROMPT_PREFIX + user_query + '\n')
             input_list.append({"role": "user", "content": user_query})
