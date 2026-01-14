@@ -47,17 +47,48 @@ custom_style = Style.from_dict({
 })
 
 def read_file(file_name: str) -> str:
+    """
+    Read the content of a file and return it as a string.
+    
+    Args:
+        file_name (str): The name of the file to read.
+    
+    Returns:
+        str: The content of the file.
+    """
     with open(file_name, "r") as file:
         return file.read()
 
 def load_env_var(var: str, store: dict):
+    """
+    Load an environment variable into a dictionary and check if it is set.
+    
+    Args:
+        var (str): The name of the environment variable to load.
+        store (dict): The dictionary to store the environment variable in.
+    
+    Raises:
+        SystemExit: If the environment variable is not set.
+    """
     var_up = var.upper()
     store[var] = environ.get(var_up)
     if not store[var]:
-        print(f"\u2192 ERROR: Environment variable " + var_up + " not set")
+        print(f"→ ERROR: Environment variable " + var_up + " not set")
         exit(1)
 
 def initialize_client(variables: dict):
+    """
+    Initialize and return an OpenAI client using the provided configuration.
+    
+    Args:
+        variables (dict): A dictionary containing the configuration variables for the client.
+    
+    Returns:
+        OpenAI: An initialized OpenAI client.
+    
+    Raises:
+        SystemExit: If the client cannot be initialized or the connection fails.
+    """
     try:
         client = OpenAI(
             base_url=variables["base_url"],
@@ -66,16 +97,34 @@ def initialize_client(variables: dict):
         client.models.list()  # Example call to test the connection
         return client
     except Exception as e:
-        print(f"\u2192 ERROR: Could not set-up the client: {e}")
+        print(f"→ ERROR: Could not set-up the client: {e}")
         exit(1)
 
 def handle_exit():
+    """
+    Exit the application.
+    """
     exit(0)
 
 def handle_help():
+    """
+    Display the help message to the user.
+    """
     print(HELP_MESSAGE)
 
 def handle_file_command(user_query_split: list):
+    """
+    Handle the /file command to read a file and return its content.
+    
+    Args:
+        user_query_split (list): A list of strings representing the user's query split by spaces.
+    
+    Returns:
+        str: The content of the file.
+    
+    Raises:
+        Exception: If the file is not found, permission is denied, or an unexpected error occurs.
+    """
     try:
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for /file")
@@ -89,6 +138,18 @@ def handle_file_command(user_query_split: list):
         raise Exception(f"Unexpected error while reading file: {e}")
 
 def handle_use_functions_command(user_query_split: list):
+    """
+    Handle the /use_functions command to toggle the ability to use functions.
+    
+    Args:
+        user_query_split (list): A list of strings representing the user's query split by spaces.
+    
+    Returns:
+        bool: The new state of the use_functions flag.
+    
+    Raises:
+        Exception: If the argument is missing or invalid.
+    """
     try:
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for /use_functions")
@@ -99,6 +160,18 @@ def handle_use_functions_command(user_query_split: list):
         raise Exception(f"\u279c ERROR: Invalid input for /use_functions: {e}")
 
 def handle_verbose_command(user_query_split: list):
+    """
+    Handle the /verbose command to toggle verbose mode.
+    
+    Args:
+        user_query_split (list): A list of strings representing the user's query split by spaces.
+    
+    Returns:
+        bool: The new state of the verbose flag.
+    
+    Raises:
+        ValueError: If the argument is missing or invalid.
+    """
     try:
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for /verbose")
@@ -109,6 +182,18 @@ def handle_verbose_command(user_query_split: list):
         raise ValueError(f"Invalid input for /verbose: {e}")
 
 def handle_wd_command(user_query_split: list):
+    """
+    Handle the /wd command to change the working directory.
+    
+    Args:
+        user_query_split (list): A list of strings representing the user's query split by spaces.
+    
+    Returns:
+        str: The new working directory.
+    
+    Raises:
+        Exception: If the argument is missing, the directory does not exist, or an error occurs.
+    """
     try:
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for /wd")
@@ -121,6 +206,24 @@ def handle_wd_command(user_query_split: list):
         raise Exception(f"ERROR: Could not change working directory: {e}")
 
 def process_user_query(user_query: str, use_functions: bool, verbose: bool, working_directory: str, client, variables: dict, input_list: list):
+    """
+    Process the user's query and generate a response using the OpenAI client.
+    
+    Args:
+        user_query (str): The user's query.
+        use_functions (bool): Whether to allow the use of functions in the response.
+        verbose (bool): Whether to enable verbose mode.
+        working_directory (str): The current working directory.
+        client: The OpenAI client used to generate the response.
+        variables (dict): A dictionary containing configuration variables.
+        input_list (list): A list of input messages for the conversation.
+    
+    Returns:
+        str: The generated response text.
+    
+    Raises:
+        SystemExit: If an error occurs during the processing of the query.
+    """
     reasoning = True
     while reasoning:
         reasoning = False
@@ -157,6 +260,11 @@ def process_user_query(user_query: str, use_functions: bool, verbose: bool, work
     return response.output_text
 
 def main():
+    """
+    Main function to run the prototype coding agent.
+    
+    This function initializes the environment, sets up the OpenAI client, and starts the interactive chat loop.
+    """
     working_directory = "test"
     verbose = False
     use_functions = True
