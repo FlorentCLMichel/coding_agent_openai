@@ -1,4 +1,3 @@
-# TODO: add the other functions
 tools = [
     {
         "type": "function",
@@ -97,8 +96,50 @@ tools = [
                 "args": {
                     "type": "string",
                     "description": "Space-separated list of arguments passed to the script.",
+                    "default": "",
                 },
             },
+            "required": ["file_path"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "compile_cc",
+        "description": "Run the gcc C compiler from the specified directory. The log is saved to log.txt.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "args": {
+                    "type": "string",
+                    "description": "List of arguments passed to the compiler.",
+                },
+                "dir_path": {
+                    "type": "string",
+                    "description": "Path to the directory to run the compiler from, relative to the working directory.",
+                    "default": ".",
+                },
+            },
+            "required": ["args"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "compile_cxx",
+        "description": "Run the g++ C++ compiler from the specified directory. The log is saved to log.txt.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "args": {
+                    "type": "string",
+                    "description": "List of arguments passed to the compiler.",
+                },
+                "dir_path": {
+                    "type": "string",
+                    "description": "Path to the directory to run the compiler from, relative to the working directory.",
+                    "default": ".",
+                },
+            },
+            "required": ["args"],
         },
     },
 ]
