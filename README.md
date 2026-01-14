@@ -90,7 +90,7 @@ The agent uses a system prompt defined in `system_prompt.md`. You can modify thi
 
 ### Chat History
 
-All interactions are logged in `.chat.history` for reference.
+The user queries and repplies for the model are logged in `.chat.history` for reference. The history of user inputs is logged in `.prompt_history`.
 
 ## License
 
