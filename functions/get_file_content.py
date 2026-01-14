@@ -8,7 +8,7 @@ def get_file_content(working_directory: str, file_path: str) -> str :
     if not(path_is_parent(working_directory, target_file)):
         return f'ERROR: Cannot get the content of "{target_file}" as it is outside the permitted working directory {working_directory}'
     try:
-        with open(target_file, "r") as f:
+        with open(target_file, "r", encoding="utf-8") as f:
             content = f.read(MAX_CHARS)
             if os.path.getsize(target_file) > MAX_CHARS:
                 content += (

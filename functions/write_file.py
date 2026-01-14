@@ -12,7 +12,7 @@ def write_file(working_directory, file_path, content) -> str :
     if os.path.exists(file_path) and os.path.isdir(file_path):
         return f'ERROR: "{file_path}" is a directory, not a file'
     try:
-        with open(file_path, 'w') as f:
+        with open(file_path, 'w', encoding="utf-8") as f:
             f.write(content)
         return f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
     except Exception as e:
