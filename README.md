@@ -4,7 +4,7 @@ This project implements a simple coding agent using the OpenAI Python API. The a
 
 ## Warning
 
-This is an experimental implementation of a coding agent. It executes Python code locally and has access to the file system within the working directory. Use with caution, as executing untrusted code can lead to unintended consequences, including data loss or security vulnerabilities. Always review the code and ensure it is safe before execution.
+This is an experimental implementation of a coding agent. It may Python code locally, compile C or C++ code, and has access to the file system within the working directory. Use with caution, as executing untrusted code can lead to unintended consequences, including data loss or security vulnerabilities. Always review the code and ensure it is safe before execution.
 
 **Risks:**
 - Unintended file deletion or modification.
@@ -30,6 +30,7 @@ This is an experimental implementation of a coding agent. It executes Python cod
 - Python 3.x
 - OpenAI Python library
 - An API key from OpenAI or OpenRouter
+- For compiling C/C++ code, a C/C++ compiler
 
 ### Environment Variables
 
@@ -37,6 +38,8 @@ The code requires three environment variables:
 
 * `API_KEY`: Your OpenAI or OpenRouter API key
 * `BASE_URL`: The URL where the model can be found
+* `CC`: Command to use for compiling C code (default: `gcc`)
+* `CXX`: Command to use for compiling C code (default: `g++`)
 * `MODEL`: Name of the model to use
 
 You can either set these explicitly or store them in a `.env` file. Here's an example `.env` file (replace `<your-API-key>` with your actual key):
@@ -44,6 +47,8 @@ You can either set these explicitly or store them in a `.env` file. Here's an ex
 ```bash
 API_KEY=<your-API-key>
 BASE_URL=https://openrouter.ai/api/v1
+CC="gcc"
+CXX="g++"
 MODEL=mistralai/devstral-2512:free
 ```
 

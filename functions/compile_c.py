@@ -1,9 +1,12 @@
-from functions.utils import *
-
+from dotenv import load_dotenv
+from os import environ
 import subprocess
 
-CC = "gcc"
-CXX = "g++"
+from functions.utils import *
+
+load_dotenv()
+CC = environ.get("CC") or "gcc"
+CXX = environ.get("CXX") or "gcc"
 
 def compile_cc(working_directory, args, dir_path='.') -> str :
     dir_path = os.path.join(working_directory, dir_path)
