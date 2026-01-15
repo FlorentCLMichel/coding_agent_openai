@@ -6,6 +6,10 @@ This project implements a simple coding agent using the OpenAI Python API. The a
 
 This is an experimental implementation of a coding agent. It may Python code locally, compile C or C++ code, and has access to the file system within the working directory. Use with caution, as executing untrusted code can lead to unintended consequences, including data loss or security vulnerabilities. Always review the code and ensure it is safe before execution.
 
+For security, you may disable function use by running `/use_functions 0`. 
+
+The model can be given access to a shell by running `/allow_shell 1`. This obviously increases the risks. We recommend only using this in a sandboxed environment. 
+
 **Risks:**
 - Unintended file deletion or modification.
 - Exposure of sensitive data.
