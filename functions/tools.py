@@ -84,6 +84,21 @@ tools = [
     },
     {
         "type": "function",
+        "name": "run_sh_command",
+        "description": "Run a shell command from the working directory.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "cmd": {
+                    "type": "string",
+                    "description": "Command to run, including arguments",
+                },
+            },
+            "required": ["cmd"],
+        },
+    },
+    {
+        "type": "function",
         "name": "run_python_file",
         "description": "Run the Python script in the specified file, constrained to the working directory.",
         "parameters": {

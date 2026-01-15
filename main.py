@@ -17,16 +17,17 @@ from functions.tools import tools
 PROMPT_PREFIX = "\u276f "
 
 HELP_MESSAGE = '''Available commands:
+  /help : print this help message
   /exit : leave the chat
   /file : load prompt from a file
-  /help : print this help message
-  /use_functions [0,1] : turn the ability to use functions on (1) or off (0)
-  /verbose [0,1] : turn verbose mode on (1) or off (0)
+  /allow_shell [0,1] : turn the ability to use a shell on (1) or off (0) (default: OFF)
+  /use_functions [0,1] : turn the ability to use functions on (1) or off (0) (default: ON)
+  /verbose [0,1] : turn verbose mode on (1) or off (0) (default: OFF)
   /wd <directory> : change the working directory
 '''
 
 commands = [
-    '/exit', '/file', '/help', '/use_functions', '/verbose', '/wd',
+    '/allow_shell', '/exit', '/file', '/help', '/use_functions', '/verbose', '/wd',
 ]
 
 command_completer = WordCompleter(commands, sentence=True)
@@ -99,6 +100,28 @@ def initialize_client(variables: dict):
     except Exception as e:
         print(f"→ ERROR: Could not set-up the client: {e}")
         exit(1)
+
+def handle_allow_shell(user_query_split: list):
+    """
+    Handle the /allow_shell command to toggle shell permission.
+    
+    Args:
+        user_query_split (list): A list of strings representing the user's query split by spaces.
+    
+    Returns:
+        bool: The new state of the allow_shell flag.
+    
+    Raises:
+        ValueError: If the argument is missing or invalid.
+    """
+    try:
+        if len(user_query_split) < 2:
+            raise ValueError("Missing argument for /allow_shell")
+        allow_shell = bool(int(user_query_split[1]))
+        print(f"\u2192 Shell use allowed: {allow_shell}")
+        return allow_shell
+    except ValueError as e:
+        raise ValueError(f"Invalid input for /allow_shell: {e}")
 
 def handle_exit():
     """
@@ -205,12 +228,14 @@ def handle_wd_command(user_query_split: list):
     except Exception as e:
         raise Exception(f"ERROR: Could not change working directory: {e}")
 
-def process_user_query(user_query: str, use_functions: bool, verbose: bool, working_directory: str, client, variables: dict, input_list: list):
+def process_user_query(user_query: str, allow_shell: bool, use_functions: bool, verbose: bool, 
+                       working_directory: str, client, variables: dict, input_list: list):
     """
     Process the user's query and generate a response using the OpenAI client.
     
     Args:
         user_query (str): The user's query.
+        allow_shell (bool): Whether to allow shell use.
         use_functions (bool): Whether to allow the use of functions in the response.
         verbose (bool): Whether to enable verbose mode.
         working_directory (str): The current working directory.
@@ -248,7 +273,9 @@ def process_user_query(user_query: str, use_functions: bool, verbose: bool, work
                 if not hasattr(item, "name") or not hasattr(item, "arguments"):
                     raise ValueError("Invalid function call structure")
                 reasoning = True
-                output = call_function(item.name, item.arguments, verbose=verbose, working_directory=working_directory)
+                output = call_function(item.name, item.arguments, verbose=verbose, 
+                                       working_directory=working_directory,
+                                       allow_shell=allow_shell)
                 input_list.append({
                     "type": "function_call_output",
                     "call_id": item.call_id,
@@ -267,6 +294,7 @@ def main():
     """
     working_directory = "test"
     verbose = False
+    allow_shell = False
     use_functions = True
 
     load_dotenv()
@@ -306,6 +334,9 @@ def main():
 
             try:
                 match user_query_split[0]:
+                    case '/allow_shell':
+                        allow_shell = handle_allow_shell(user_query_split)
+                        continue
                     case '/exit':
                         handle_exit()
                     case '/help':
@@ -329,7 +360,8 @@ def main():
             history_file.write(PROMPT_PREFIX + user_query + '\n')
             input_list.append({"role": "user", "content": user_query})
 
-            response_text = process_user_query(user_query, use_functions, verbose, working_directory, client, variables, input_list)
+            response_text = process_user_query(user_query, allow_shell, use_functions, verbose, 
+                                               working_directory, client, variables, input_list)
 
             history_file.write('\n' + response_text + '\n\n')
             print('\n' + response_text + '\n')

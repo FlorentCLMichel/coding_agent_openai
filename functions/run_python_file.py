@@ -1,3 +1,4 @@
+from functions.config import TIMEOUT
 from functions.utils import *
 import subprocess
 
@@ -17,7 +18,7 @@ def run_python_file(working_directory, file_path, args="") -> str:
             commands,
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=TIMEOUT,
         )
         output = []
         if result.stdout:
