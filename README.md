@@ -8,7 +8,7 @@ This is an experimental implementation of a coding agent. It may compile C or C+
 
 For security, you may disable function use by running `/use_functions 0`. 
 
-The model can be given access to a shell (by running `/allow_shell 1`) or to run Python scripts (by running `allow_python 1`). This obviously increases the risks. We recommend only using this in a sandboxed environment. 
+The model can be given access to a shell (by running `/allow_shell 1`) or to run Python scripts (by running `allow_python 1`). **Letting an AI model run arbitrary code is fundamentally insecure.** We recommend not using these features unless running the agent in a sandboxed environment. 
 
 **Risks:**
 - Unintended file deletion or modification.
