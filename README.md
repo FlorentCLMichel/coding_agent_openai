@@ -31,6 +31,8 @@ The model can be given access to a shell (by running `/allow_shell 1`) or to run
 3. **Review Logs**: Audit the agent’s actions by reviewing `.chat.history` and `.prompt_history`.
 4. **Disable High-Risk Features**: Do not use `/allow_shell 1` nor `/allow_python 1` to enable shell or Python execution unless you are sure you know what you are doing.
 
+To mitigate risks, we recommend [running the agent from a limited user](#Running the agent from a temporary user in Linux).
+
 ## Features
 
 - Interactive chat interface with the OpenAI model
@@ -85,6 +87,55 @@ MODEL=mistralai/devstral-2512:free
    ```bash
    pip install -r requirements.txt
    ```
+
+
+### Running the agent from a temporary user in Linux
+
+In this section we sketch how to run the agent from a temporary user account on Linux to reduce security risks. Steps 1 to 4 and 6 are only required the first time you use the agent from a new user account. Steps 5, 7, and 8 are required each time the agent is run (although step 7 may be skipped if saving a file `.env` with all the required [environment variables](#Environment Variables)). Step 9 is optional. (For each command, `sudo` may be omitted if loged-in as root.)
+
+1. Create a temporary user:
+    ```
+    sudo adduser <temp_user>
+    ```
+
+2. Copy the repository content to a new directory in the user `home` directory:
+    ```
+    sudo mkdir /home/<temp_user>/<agent_dir>
+    sudo cp -r * /home/<temp_user>/<agent_dir>
+    sudo chown <temp_user> -R /home/temp_user/<agent_dir>
+    ```
+
+3. Log-in as the temporary user:
+    ```
+    su - <temp_user>
+    ```
+4. Create a virtual environment:
+    ```
+    python3 -m venv <virtual_env>
+    ```
+
+5. Activate the virtual environment and move to the agent directory:
+    ```
+    source <virtual_env>/bin/activate
+    cd <agent_dir>
+    ```
+
+6. Install the reauired dependencies:
+    ```
+    pip3 install -r requirements.txt
+    ```
+
+7. Set the required [environment variables](#Environment Variables)
+
+8. Run the agent:
+    ```
+    python3 ./main.py
+    ```
+
+9. To delete the user, run the following command from a (different) user with sudo priviledge:
+    ```
+    sudo deluser --remove-home <temp_user>
+    ```
 
 ## Usage
 
