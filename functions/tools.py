@@ -157,4 +157,79 @@ tools = [
             "required": ["args"],
         },
     },
+    {
+        "type": "function",
+        "name": "new_rust_project",
+        "description": "Create a new Rust project using Cargo. The log is saved to log.txt.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the project.",
+                },
+                "dir_path": {
+                    "type": "string",
+                    "description": "Path to the directory where the project should be created, relative to the working directory.",
+                    "default": ".",
+                },
+                "args": {
+                    "type": "string",
+                    "description": "List of additional arguments passed to Cargo.",
+                    "default": "",
+                },
+            },
+            "required": ["name"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "build_rust_project",
+        "description": "Build an existing Rust project using Cargo. The log is saved to log.txt.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the project.",
+                },
+                "dir_path": {
+                    "type": "string",
+                    "description": "Path to the directory where the project is located, relative to the working directory.",
+                    "default": ".",
+                },
+                "args": {
+                    "type": "string",
+                    "description": "List of additional arguments passed to Cargo.",
+                    "default": "",
+                },
+            },
+            "required": ["name"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "run_rust_project",
+        "description": "Run an existing Rust project using Cargo. The log is saved to log.txt.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the project.",
+                },
+                "dir_path": {
+                    "type": "string",
+                    "description": "Path to the directory where the project is located, relative to the working directory.",
+                    "default": ".",
+                },
+                "args": {
+                    "type": "string",
+                    "description": "List of additional arguments passed to Cargo.",
+                    "default": "",
+                },
+            },
+            "required": ["name"],
+        },
+    },
 ]

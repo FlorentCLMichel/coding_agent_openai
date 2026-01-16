@@ -8,6 +8,7 @@ from functions.move_file import *
 from functions.run_sh_command import *
 from functions.run_python_file import *
 from functions.compile_c import *
+from functions.rust import *
 
 functions = {
     "get_files_info": get_files_info,
@@ -19,6 +20,9 @@ functions = {
     "run_python_file": run_python_file,
     "compile_cc": compile_cc,
     "compile_cxx": compile_cxx,
+    "new_rust_project": new_rust_project,
+    "build_rust_project": build_rust_project,
+    "run_rust_project": run_rust_project,
 }
 
 def call_function(function_name, function_args, verbose=False, working_directory='.', 

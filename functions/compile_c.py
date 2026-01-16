@@ -16,7 +16,7 @@ def compile_cc(working_directory, args, dir_path='.') -> str :
     try:
         with open(log_file_path, 'w') as f:
             subprocess.call([CC, *args.split()], cwd=dir_path, stderr=f, stdout=f)
-            return f'Finished running the compiler; see log.txt for the log and potential errors'
+            return f'Finished running the compiler; see {log_file_path} for the log and potential errors'
     except Exception as e:
         return f"ERROR: writing to file: {e}"
 
