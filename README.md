@@ -119,7 +119,7 @@ In this section we sketch how to run the agent from a temporary user account on 
     cd <agent_dir>
     ```
 
-6. Install the reauired dependencies:
+6. Install the required dependencies:
     ```
     pip3 install -r requirements.txt
     ```
