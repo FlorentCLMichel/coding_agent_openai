@@ -87,8 +87,36 @@ MODEL=mistralai/devstral-2512:free
    pip install -r requirements.txt
    ```
 
+## Usage
 
-### Running the agent from a temporary user in Linux
+Run the agent using:
+```bash
+python3 ./main.py
+```
+
+### Commands
+
+The agent supports the following commands (all starting with `/`):
+
+* `/help`: Print a help message
+* `/exit`: Exit the program
+* `/file <filename>`: Read the content of `<filename>` and treat it as a user query
+* `/allow_shell [0,1]` : turn the ability to use a shell on (1) or off (0) (default: off)
+* `/allow_python [0,1]` : turn the ability to run Python scripts on (1) or off (0) (default: off)
+* `/use_functions [0,1]` : turn the ability to use functions on (1) or off (0) (default: on)
+* `/verbose [0,1]`: Set verbose mode on (1) or off (0) (default: off)
+* `/wd <directory>`: Change the working directory
+
+### System Prompt
+
+The agent uses a system prompt defined in `system_prompt.md`. You can modify this file to change the agent's behavior.
+
+### Chat History
+
+The user queries and repplies for the model are logged in `.chat.history` for reference. The history of user inputs is logged in `.prompt_history`.
+
+
+## Running the agent from a temporary user in Linux
 
 In this section we sketch how to run the agent from a temporary user account on Linux to reduce security risks. Steps 1 to 4 and 6 are only required the first time you use the agent from a new user account. Steps 5, 7, and 8 are required each time the agent is run (although step 7 may be skipped if saving a file `.env` with all the required [environment variables](#Environment-Variables)). Step 9 is optional. (For each command, `sudo` may be omitted if loged-in as root.)
 
@@ -135,34 +163,6 @@ In this section we sketch how to run the agent from a temporary user account on 
     ```
     sudo deluser --remove-home <temp_user>
     ```
-
-## Usage
-
-Run the agent using:
-```bash
-python3 ./main.py
-```
-
-### Commands
-
-The agent supports the following commands (all starting with `/`):
-
-* `/help`: Print a help message
-* `/exit`: Exit the program
-* `/file <filename>`: Read the content of `<filename>` and treat it as a user query
-* `/allow_shell [0,1]` : turn the ability to use a shell on (1) or off (0) (default: off)
-* `/allow_python [0,1]` : turn the ability to run Python scripts on (1) or off (0) (default: off)
-* `/use_functions [0,1]` : turn the ability to use functions on (1) or off (0) (default: on)
-* `/verbose [0,1]`: Set verbose mode on (1) or off (0) (default: off)
-* `/wd <directory>`: Change the working directory
-
-### System Prompt
-
-The agent uses a system prompt defined in `system_prompt.md`. You can modify this file to change the agent's behavior.
-
-### Chat History
-
-The user queries and repplies for the model are logged in `.chat.history` for reference. The history of user inputs is logged in `.prompt_history`.
 
 ## License
 
