@@ -4,32 +4,21 @@ This project implements a simple coding agent using the OpenAI Python API. The a
 
 ## Warning
 
-This is an experimental implementation of a coding agent. It may compile C or C++ code and has access to the file system within the working directory. Use with caution, as executing untrusted code can lead to unintended consequences, including data loss or security vulnerabilities. Always review the code and ensure it is safe before execution. 
+This is an experimental implementation of a coding agent. It may compile C or C++ code and has access to the file system within the working directory. Use with caution, as executing untrusted code can lead to unintended consequences, including data loss or security vulnerabilities. Always review the code and ensure it is safe before execution.
 
-In principle, the agent only has access to the content of the working directory (by default, `test`; it can be changed with the `/wd` command). **Ensure the working directory is isolated and contains no sensitive data.** Please note that there is no guarantee that an error in the code may not allow access to files outside the working directory.
-
-For additional security, you may disable function use by running `/use_functions 0`. 
+For security, you may disable function use by running `/use_functions 0`. 
 
 The model can be given access to a shell (by running `/allow_shell 1`) or to run Python scripts (by running `allow_python 1`). **Letting an AI model run arbitrary code is fundamentally insecure.** We recommend not using these features unless running the agent in a sandboxed environment. 
 
-**By default, shell and Python execution are disabled. Do not enable these features unless you fully understand the risks and are
- running in a sandboxed environment.**
+**Risks:**
+- Unintended file deletion or modification.
+- Exposure of sensitive data.
+- Execution of malicious code.
 
-### Risks
-
-- **Unintended File Modification/Deletion**: The agent may overwrite or delete files in the working directory.
-- **Data Exposure**: Sensitive data in the working directory could be read or leaked.
-- **Malicious Code Execution**: Enabling shell or Python execution allows arbitrary code to run, which could compromise your system.
-
-### Best Practices
-
-1. **Sandboxing**: Run the agent in a sandboxed environment (e.g., Docker container or VM) with:
-   - Restricted network access.
-   - A read-only filesystem where possible.
-   - Minimal permissions.
-2. **Isolate the Working Directory**: Ensure the working directory contains no sensitive data and is isolated from the rest of your system.
-3. **Review Logs**: Audit the agent’s actions by reviewing `.chat.history` and `.prompt_history`.
-4. **Disable High-Risk Features**: Do not use `/allow_shell 1` nor `/allow_python 1` to enable shell or Python execution unless you are sure you know what you are doing.
+**Best Practices:**
+- Run the agent in a sandboxed environment.
+- Review all code before execution.
+- Avoid using the agent with sensitive or production data.
 
 ## Features
 
