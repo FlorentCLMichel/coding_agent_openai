@@ -23,6 +23,7 @@ functions = {
     "new_rust_project": new_rust_project,
     "build_rust_project": build_rust_project,
     "run_rust_project": run_rust_project,
+    "run_clippy": run_clippy,
 }
 
 def call_function(function_name, function_args, verbose=False, working_directory='.', 
@@ -38,7 +39,7 @@ def call_function(function_name, function_args, verbose=False, working_directory
         function_args["working_directory"] = working_directory
         try: 
             return functions[function_name](**function_args)
-        except e:
+        except Exception as e:
             return f"ERROR calling the function {function_name}: {e}"
     else:
         return f"ERROR: Unknown function: {function_name}",

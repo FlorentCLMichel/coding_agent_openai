@@ -232,4 +232,29 @@ tools = [
             "required": ["name"],
         },
     },
+    {
+        "type": "function",
+        "name": "run_clippy",
+        "description": "Run the Clippy linter for a Rust project. The log is saved to log.txt.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the project.",
+                },
+                "dir_path": {
+                    "type": "string",
+                    "description": "Path to the directory where the project is located, relative to the working directory.",
+                    "default": ".",
+                },
+                "args": {
+                    "type": "string",
+                    "description": "List of additional arguments passed to Clippy.",
+                    "default": "",
+                },
+            },
+            "required": ["name"],
+        },
+    },
 ]
