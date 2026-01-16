@@ -4,7 +4,7 @@ This project implements a simple coding agent using the OpenAI Python API. The a
 
 ## Warning
 
-This is an experimental implementation of a coding agent. It may compile C or C++ code and has access to the file system within the working directory. Use with caution, as executing untrusted code can lead to unintended consequences, including data loss or security vulnerabilities. Always review the code and ensure it is safe before execution. 
+This is an experimental implementation of a coding agent. It may compile C, C++, or Rust code and has access to the file system within the working directory. Use with caution, as executing untrusted code can lead to unintended consequences, including data loss or security vulnerabilities. Always review the code and ensure it is safe before execution. 
 
 In principle, the agent only has access to the content of the working directory (by default, `test`; it can be changed with the `/wd` command). **Ensure the working directory is isolated and contains no sensitive data.** Please note that there is no guarantee that an error in the code may not allow access to files outside the working directory.
 
@@ -46,7 +46,8 @@ To mitigate risks, we recommend at least [running the agent from a limited user]
 - Python 3.x
 - OpenAI Python library
 - An API key from OpenAI or OpenRouter
-- For compiling C/C++ code, a C/C++ compiler
+- For compiling C/C++ code, a C/C++ compiler such as [gcc/g++](https://gcc.gnu.org/)
+- For creating and building Rust projects, the [Rust toolchain](https://rust-lang.org/tools/install/)
 
 ### Environment Variables
 
