@@ -4,11 +4,11 @@ This project implements a simple coding agent using the OpenAI Python API. The a
 
 ## Warning
 
-This is an experimental implementation of a coding agent. It may Python code locally, compile C or C++ code, and has access to the file system within the working directory. Use with caution, as executing untrusted code can lead to unintended consequences, including data loss or security vulnerabilities. Always review the code and ensure it is safe before execution.
+This is an experimental implementation of a coding agent. It may compile C or C++ code and has access to the file system within the working directory. Use with caution, as executing untrusted code can lead to unintended consequences, including data loss or security vulnerabilities. Always review the code and ensure it is safe before execution.
 
 For security, you may disable function use by running `/use_functions 0`. 
 
-The model can be given access to a shell by running `/allow_shell 1`. This obviously increases the risks. We recommend only using this in a sandboxed environment. 
+The model can be given access to a shell (by running `/allow_shell 1`) or to run Python scripts (by running `allow_python 1`). This obviously increases the risks. We recommend only using this in a sandboxed environment. 
 
 **Risks:**
 - Unintended file deletion or modification.
@@ -90,6 +90,7 @@ The agent supports the following commands (all starting with `/`):
 * `/exit`: Exit the program
 * `/file <filename>`: Read the content of `<filename>` and treat it as a user query
 * `/allow_shell [0,1]` : turn the ability to use a shell on (1) or off (0) (default: off)
+* `/allow_python [0,1]` : turn the ability to run Python scripts on (1) or off (0) (default: off)
 * `/use_functions [0,1]` : turn the ability to use functions on (1) or off (0) (default: on)
 * `/verbose [0,1]`: Set verbose mode on (1) or off (0) (default: off)
 * `/wd <directory>`: Change the working directory

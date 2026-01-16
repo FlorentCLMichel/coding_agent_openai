@@ -20,6 +20,7 @@ HELP_MESSAGE = '''Available commands:
   /help : print this help message
   /exit : leave the chat
   /file : load prompt from a file
+  /allow_python [0,1] : turn the ability to run Python scripts on (1) or off (0) (default: OFF)
   /allow_shell [0,1] : turn the ability to use a shell on (1) or off (0) (default: OFF)
   /use_functions [0,1] : turn the ability to use functions on (1) or off (0) (default: ON)
   /verbose [0,1] : turn verbose mode on (1) or off (0) (default: OFF)
@@ -27,7 +28,7 @@ HELP_MESSAGE = '''Available commands:
 '''
 
 commands = [
-    '/allow_shell', '/exit', '/file', '/help', '/use_functions', '/verbose', '/wd',
+    '/allow_python', '/allow_shell', '/exit', '/file', '/help', '/use_functions', '/verbose', '/wd',
 ]
 
 command_completer = WordCompleter(commands, sentence=True)
@@ -100,6 +101,28 @@ def initialize_client(variables: dict):
     except Exception as e:
         print(f"→ ERROR: Could not set-up the client: {e}")
         exit(1)
+
+def handle_allow_python(user_query_split: list):
+    """
+    Handle the /allow_python command to toggle Python permission.
+    
+    Args:
+        user_query_split (list): A list of strings representing the user's query split by spaces.
+    
+    Returns:
+        bool: The new state of the allow_python flag.
+    
+    Raises:
+        ValueError: If the argument is missing or invalid.
+    """
+    try:
+        if len(user_query_split) < 2:
+            raise ValueError("Missing argument for /allow_python")
+        allow_python = bool(int(user_query_split[1]))
+        print(f"\u2192 Shell use allowed: {allow_python}")
+        return allow_python
+    except ValueError as e:
+        raise ValueError(f"Invalid input for /allow_python: {e}")
 
 def handle_allow_shell(user_query_split: list):
     """
@@ -228,13 +251,15 @@ def handle_wd_command(user_query_split: list):
     except Exception as e:
         raise Exception(f"ERROR: Could not change working directory: {e}")
 
-def process_user_query(user_query: str, allow_shell: bool, use_functions: bool, verbose: bool, 
-                       working_directory: str, client, variables: dict, input_list: list):
+def process_user_query(user_query: str, allow_python: bool, allow_shell: bool, use_functions: bool, 
+                       verbose: bool, working_directory: str, client, variables: dict, 
+                       input_list: list):
     """
     Process the user's query and generate a response using the OpenAI client.
     
     Args:
         user_query (str): The user's query.
+        allow_python (bool): Whether to allow running Python scripts.
         allow_shell (bool): Whether to allow shell use.
         use_functions (bool): Whether to allow the use of functions in the response.
         verbose (bool): Whether to enable verbose mode.
@@ -275,7 +300,7 @@ def process_user_query(user_query: str, allow_shell: bool, use_functions: bool, 
                 reasoning = True
                 output = call_function(item.name, item.arguments, verbose=verbose, 
                                        working_directory=working_directory,
-                                       allow_shell=allow_shell)
+                                       allow_python=allow_python, allow_shell=allow_shell)
                 input_list.append({
                     "type": "function_call_output",
                     "call_id": item.call_id,
@@ -294,6 +319,7 @@ def main():
     """
     working_directory = "test"
     verbose = False
+    allow_python = False
     allow_shell = False
     use_functions = True
 
@@ -334,6 +360,9 @@ def main():
 
             try:
                 match user_query_split[0]:
+                    case '/allow_python':
+                        allow_python = handle_allow_python(user_query_split)
+                        continue
                     case '/allow_shell':
                         allow_shell = handle_allow_shell(user_query_split)
                         continue
@@ -360,8 +389,9 @@ def main():
             history_file.write(PROMPT_PREFIX + user_query + '\n')
             input_list.append({"role": "user", "content": user_query})
 
-            response_text = process_user_query(user_query, allow_shell, use_functions, verbose, 
-                                               working_directory, client, variables, input_list)
+            response_text = process_user_query(user_query, allow_python, allow_shell, use_functions, 
+                                               verbose, working_directory, client, variables, 
+                                               input_list)
 
             history_file.write('\n' + response_text + '\n\n')
             print('\n' + response_text + '\n')

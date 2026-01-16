@@ -21,12 +21,15 @@ functions = {
     "compile_cxx": compile_cxx,
 }
 
-def call_function(function_name, function_args, verbose=False, working_directory='.', allow_shell=False):
+def call_function(function_name, function_args, verbose=False, working_directory='.', 
+                  allow_python=False, allow_shell=False):
     function_args = json.loads(function_args)
     if verbose:
         print(f"Calling function: {function_name}({function_args})")
     if function_name == "run_sh_command" and not(allow_shell):
-        return "ERROR: Running shell commands is not allowed"
+        return "ERROR: You do not have permission to run shell commands"
+    if function_name == "run_python_file" and not(allow_python):
+        return "ERROR: You do not have permission to run Python scripts"
     if function_name in functions.keys():
         function_args["working_directory"] = working_directory
         try: 
