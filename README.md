@@ -12,8 +12,7 @@ For additional security, you may disable function use by running `/use_functions
 
 The model can be given access to a shell (by running `/allow_shell 1`) or to run Python scripts (by running `allow_python 1`). **Letting an AI model run arbitrary code is fundamentally insecure.** We recommend not using these features unless running the agent in a sandboxed environment. 
 
-**By default, shell and Python execution are disabled. Do not enable these features unless you fully understand the risks and are
- running in a sandboxed environment.**
+**By default, shell and Python execution are disabled. Do not enable these features unless you fully understand the risks and are running in a sandboxed environment.**
 
 ### Risks
 
@@ -31,7 +30,7 @@ The model can be given access to a shell (by running `/allow_shell 1`) or to run
 3. **Review Logs**: Audit the agent’s actions by reviewing `.chat.history` and `.prompt_history`.
 4. **Disable High-Risk Features**: Do not use `/allow_shell 1` nor `/allow_python 1` to enable shell or Python execution unless you are sure you know what you are doing.
 
-To mitigate risks, we recommend [running the agent from a limited user](#Running the agent from a temporary user in Linux).
+To mitigate risks, we recommend [running the agent from a limited user](#Running-the-agent-from-a-temporary-user-in-Linux).
 
 ## Features
 
@@ -91,7 +90,7 @@ MODEL=mistralai/devstral-2512:free
 
 ### Running the agent from a temporary user in Linux
 
-In this section we sketch how to run the agent from a temporary user account on Linux to reduce security risks. Steps 1 to 4 and 6 are only required the first time you use the agent from a new user account. Steps 5, 7, and 8 are required each time the agent is run (although step 7 may be skipped if saving a file `.env` with all the required [environment variables](#Environment Variables)). Step 9 is optional. (For each command, `sudo` may be omitted if loged-in as root.)
+In this section we sketch how to run the agent from a temporary user account on Linux to reduce security risks. Steps 1 to 4 and 6 are only required the first time you use the agent from a new user account. Steps 5, 7, and 8 are required each time the agent is run (although step 7 may be skipped if saving a file `.env` with all the required [environment variables](#Environment-Variables)). Step 9 is optional. (For each command, `sudo` may be omitted if loged-in as root.)
 
 1. Create a temporary user:
     ```
@@ -125,7 +124,7 @@ In this section we sketch how to run the agent from a temporary user account on 
     pip3 install -r requirements.txt
     ```
 
-7. Set the required [environment variables](#Environment Variables)
+7. Set the required [environment variables](#Environment-Variables)
 
 8. Run the agent:
     ```
