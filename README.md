@@ -30,7 +30,7 @@ The model can be given access to a shell (by running `/allow_shell 1`) or to run
 3. **Review Logs**: Audit the agent’s actions by reviewing `.chat.history` and `.prompt_history`.
 4. **Disable High-Risk Features**: Do not use `/allow_shell 1` nor `/allow_python 1` to enable shell or Python execution unless you are sure you know what you are doing.
 
-To mitigate risks, we recommend [running the agent from a limited user](#Running-the-agent-from-a-temporary-user-in-Linux).
+To mitigate risks, we recommend at least [running the agent from a limited user](#Running-the-agent-from-a-temporary-user-in-Linux). For additional security, consider using a [Docker](https://www.docker.com/) or [Bubblewrap](https://github.com/containers/bubblewrap) container, or running the agent in a virtual machine with non sensitive information.
 
 ## Features
 
