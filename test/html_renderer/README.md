@@ -2,6 +2,8 @@
 
 A simple HTML renderer written in Rust. This project parses HTML files and renders them to PNG images using Cairo and Pango.
 
+**Disclaimer:** This project is mostly AI-generated.
+
 ## Features
 
 - Parse HTML files using `html5ever` and `markup5ever_rcdom`.
