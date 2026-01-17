@@ -33,7 +33,7 @@ def call_function(function_name, function_args, verbose=False, working_directory
                   allow_unsafe_fun=False):
     function_args = json.loads(function_args)
     if verbose:
-        print(f"Calling function: {function_name}({function_args})")
+        print(f"→ Calling function: {function_name}({function_args})")
     if function_name in safer_functions.keys():
         function_args["working_directory"] = working_directory
         try: 

@@ -12,7 +12,7 @@ def new_rust_project(working_directory, name, dir_path='.', args='') -> str :
         with open(working_directory + '/' + log_file_path, 'w') as f:
             if subprocess.call(['cargo', 'new', name, *args.split()], cwd=working_directory+'/'+dir_path, stderr=f, stdout=f):
                 return f'ERROR: See {log_file_path} for details'
-            return f'Created Rust project {name} in directory {dir_path}; see {log_file_path} for the log and potential errors'
+            return f'Created Rust project {name} in directory {dir_path}; see {log_file_path} for the log'
     except Exception as e:
         return f"ERROR: writing to file: {e}"
 
@@ -28,7 +28,7 @@ def build_rust_project(working_directory, name, dir_path='.', args='') -> str :
         with open(working_directory + '/' + log_file_path, 'w') as f:
             if subprocess.call(['cargo', 'build', *args.split()], cwd=project_path, stderr=f, stdout=f):
                 return f'ERROR: See {log_file_path} for details'
-            return f'Built Rust project {name} in directory {dir_path}; see {log_file_path} for the log and potential errors'
+            return f'Built Rust project {name} in directory {dir_path}; see {log_file_path} for the log'
     except Exception as e:
         return f"ERROR: writing to file: {e}"
 
@@ -44,7 +44,7 @@ def run_rust_project(working_directory, name, dir_path='.', args='') -> str :
         with open(working_directory + '/' + log_file_path, 'w') as f:
             if subprocess.call(['cargo', 'run', *args.split()], cwd=project_path, stderr=f, stdout=f):
                 return f'ERROR: See {log_file_path} for details'
-            return f'Ran Rust project {name} in directory {dir_path}; see {log_file_path} for the log and potential errors'
+            return f'Ran Rust project {name} in directory {dir_path}; see {log_file_path} for the log'
     except Exception as e:
         return f"ERROR: writing to file: {e}"
 
@@ -60,6 +60,6 @@ def run_clippy(working_directory, name, dir_path='.', args='') -> str :
         with open(working_directory + '/' + log_file_path, 'w') as f:
             if subprocess.call(['cargo', 'clippy', *args.split()], cwd=project_path, stderr=f, stdout=f):
                 return f'ERROR: See {log_file_path} for details'
-            return f'Ran Clippy for project {name} in directory {dir_path}; see {log_file_path} for the log and potential errors'
+            return f'Ran Clippy for project {name} in directory {dir_path}; see {log_file_path} for the log'
     except Exception as e:
         return f"ERROR: writing to file: {e}"

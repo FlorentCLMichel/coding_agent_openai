@@ -283,6 +283,8 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
                 output = call_function(item.name, item.arguments, verbose=verbose, 
                                        working_directory=working_directory,
                                        allow_unsafe_fun=allow_unsafe_fun)
+                if verbose:
+                    print(f'→ Function output: {output}')
                 input_list.append({
                     "type": "function_call_output",
                     "call_id": item.call_id,

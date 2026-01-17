@@ -85,7 +85,7 @@ safer_tools = [
     {
         "type": "function",
         "name": "compile_cc",
-        "description": "Run the gcc C compiler from the specified directory. The log is saved to log.txt.",
+        "description": "Run the gcc C compiler from the specified directory.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -105,7 +105,7 @@ safer_tools = [
     {
         "type": "function",
         "name": "compile_cxx",
-        "description": "Run the g++ C++ compiler from the specified directory. The log is saved to log.txt.",
+        "description": "Run the g++ C++ compiler from the specified directory.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -125,7 +125,7 @@ safer_tools = [
     {
         "type": "function",
         "name": "new_rust_project",
-        "description": "Create a new Rust project using Cargo. The log is saved to log.txt.",
+        "description": "Create a new Rust project using Cargo.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -150,7 +150,7 @@ safer_tools = [
     {
         "type": "function",
         "name": "build_rust_project",
-        "description": "Build an existing Rust project using Cargo. The log is saved to log.txt.",
+        "description": "Build an existing Rust project using Cargo.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -175,7 +175,7 @@ safer_tools = [
     {
         "type": "function",
         "name": "run_clippy",
-        "description": "Run the Clippy linter for a Rust project. The log is saved to log.txt.",
+        "description": "Run the Clippy linter for a Rust project.",
         "parameters": {
             "type": "object",
             "properties": {
@@ -238,7 +238,7 @@ unsafe_tools = [
     {
         "type": "function",
         "name": "run_rust_project",
-        "description": "Run an existing Rust project using Cargo. The log is saved to log.txt.",
+        "description": "Run an existing Rust project using Cargo.",
         "parameters": {
             "type": "object",
             "properties": {
