@@ -10,9 +10,9 @@ In principle, the agent only has access to the content of the working directory 
 
 For additional security, you may disable function use by running `/use_functions 0`. 
 
-The model can be given access to a shell (by running `/allow_shell 1`) or to run Python scripts (by running `allow_python 1`). **Letting an AI model run arbitrary code is fundamentally insecure.** We recommend not using these features unless running the agent in a sandboxed environment. 
+The model can be given access to a shell and allowed to run Python or Rust code (by running `/allow_unsafe_fun 1`). **Letting an AI model run arbitrary code is fundamentally insecure.** We recommend not using these features unless running the agent in a sandboxed environment. 
 
-**By default, shell and Python execution are disabled. Do not enable these features unless you fully understand the risks and are running in a sandboxed environment.**
+**By default, shell access and code execution are disabled. Do not enable these features unless you fully understand the risks and are running in a sandboxed environment.**
 
 ### Risks
 
@@ -28,7 +28,7 @@ The model can be given access to a shell (by running `/allow_shell 1`) or to run
    - Minimal permissions.
 2. **Isolate the Working Directory**: Ensure the working directory contains no sensitive data and is isolated from the rest of your system.
 3. **Review Logs**: Audit the agent’s actions by reviewing `.chat.history` and `.prompt_history`.
-4. **Disable High-Risk Features**: Do not use `/allow_shell 1` nor `/allow_python 1` to enable shell or Python execution unless you are sure you know what you are doing.
+4. **Disable High-Risk Features**: Do not use `/allow_unsafe_fun 1` to enable shell and code execution unless you are sure you know what you are doing.
 
 To mitigate risks, we recommend at least [running the agent from a limited user](#Running-the-agent-from-a-temporary-user-in-Linux). For additional security, consider using a [Docker](https://www.docker.com/) or [Bubblewrap](https://github.com/containers/bubblewrap) container, or running the agent in a virtual machine with non sensitive information.
 
@@ -102,11 +102,10 @@ The agent supports the following commands (all starting with `/`):
 * `/help`: Print a help message
 * `/exit`: Exit the program
 * `/file <filename>`: Read the content of `<filename>` and treat it as a user query
-* `/allow_shell [0,1]` : turn the ability to use a shell on (1) or off (0) (default: off)
-* `/allow_python [0,1]` : turn the ability to run Python scripts on (1) or off (0) (default: off)
-* `/use_functions [0,1]` : turn the ability to use functions on (1) or off (0) (default: on)
 * `/verbose [0,1]`: Set verbose mode on (1) or off (0) (default: off)
 * `/wd <directory>`: Change the working directory
+* `/use_functions [0,1]` : turn the ability to use functions on (1) or off (0) (default: on)
+* `/allow_unsafe_fun [0,1]` : turn the ability to run unsafe functions on (1) or off (0) (default: off)
 
 ### System Prompt
 

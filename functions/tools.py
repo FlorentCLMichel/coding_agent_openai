@@ -1,4 +1,4 @@
-tools = [
+safer_tools = [
     {
         "type": "function",
         "name": "get_files_info",
@@ -80,41 +80,6 @@ tools = [
                 },
             },
             "required": ["source_path", "dest_path"],
-        },
-    },
-    {
-        "type": "function",
-        "name": "run_sh_command",
-        "description": "Run a shell command from the working directory.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "cmd": {
-                    "type": "string",
-                    "description": "Command to run, including arguments",
-                },
-            },
-            "required": ["cmd"],
-        },
-    },
-    {
-        "type": "function",
-        "name": "run_python_file",
-        "description": "Run the Python script in the specified file, constrained to the working directory.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "file_path": {
-                    "type": "string",
-                    "description": "The file to execute, relative to the working directory.",
-                },
-                "args": {
-                    "type": "string",
-                    "description": "Space-separated list of arguments passed to the script.",
-                    "default": "",
-                },
-            },
-            "required": ["file_path"],
         },
     },
     {
@@ -209,31 +174,6 @@ tools = [
     },
     {
         "type": "function",
-        "name": "run_rust_project",
-        "description": "Run an existing Rust project using Cargo. The log is saved to log.txt.",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "description": "Name of the project.",
-                },
-                "dir_path": {
-                    "type": "string",
-                    "description": "Path to the directory where the project is located, relative to the working directory.",
-                    "default": ".",
-                },
-                "args": {
-                    "type": "string",
-                    "description": "List of additional arguments passed to Cargo.",
-                    "default": "",
-                },
-            },
-            "required": ["name"],
-        },
-    },
-    {
-        "type": "function",
         "name": "run_clippy",
         "description": "Run the Clippy linter for a Rust project. The log is saved to log.txt.",
         "parameters": {
@@ -251,6 +191,69 @@ tools = [
                 "args": {
                     "type": "string",
                     "description": "List of additional arguments passed to Clippy.",
+                    "default": "",
+                },
+            },
+            "required": ["name"],
+        },
+    },
+]
+
+unsafe_tools = [
+    {
+        "type": "function",
+        "name": "run_sh_command",
+        "description": "Run a shell command from the working directory.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "cmd": {
+                    "type": "string",
+                    "description": "Command to run, including arguments",
+                },
+            },
+            "required": ["cmd"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "run_python_file",
+        "description": "Run the Python script in the specified file, constrained to the working directory.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "file_path": {
+                    "type": "string",
+                    "description": "The file to execute, relative to the working directory.",
+                },
+                "args": {
+                    "type": "string",
+                    "description": "Space-separated list of arguments passed to the script.",
+                    "default": "",
+                },
+            },
+            "required": ["file_path"],
+        },
+    },
+    {
+        "type": "function",
+        "name": "run_rust_project",
+        "description": "Run an existing Rust project using Cargo. The log is saved to log.txt.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the project.",
+                },
+                "dir_path": {
+                    "type": "string",
+                    "description": "Path to the directory where the project is located, relative to the working directory.",
+                    "default": ".",
+                },
+                "args": {
+                    "type": "string",
+                    "description": "List of additional arguments passed to Cargo.",
                     "default": "",
                 },
             },
