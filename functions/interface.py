@@ -1,4 +1,6 @@
+from datetime import datetime
 import json
+import logging
 
 from functions.get_files_info import *
 from functions.get_file_content import *
@@ -29,8 +31,23 @@ unsafe_functions = {
     "run_rust_project": run_rust_project,
 }
 
+logging.basicConfig(
+    filename='.function_calls.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
 def call_function(function_name, function_args, verbose=False, working_directory='.', 
                   allow_unsafe_fun=False):
+    
+    # Log the function call
+    logging.info(
+        f"Function called: {function_name} | "
+        f"Arguments: {function_args} | "
+        f"Working Directory: {working_directory} | "
+        f"Allow Unsafe Functions: {allow_unsafe_fun}"
+    )
+
     function_args = json.loads(function_args)
     if verbose:
         print(f"→ Calling function: {function_name}({function_args})")

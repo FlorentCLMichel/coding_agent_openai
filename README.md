@@ -27,7 +27,7 @@ The model can be given access to a shell and allowed to run Python or Rust code 
    - A read-only filesystem where possible.
    - Minimal permissions.
 2. **Isolate the Working Directory**: Ensure the working directory contains no sensitive data and is isolated from the rest of your system.
-3. **Review Logs**: Audit the agent’s actions by reviewing `.chat.history` and `.prompt_history`.
+3. **Review Logs**: Audit the agent’s actions by reviewing `.chat.history`, `.prompt_history`, and `.function_calls.log`.
 4. **Disable High-Risk Features**: Do not use `/allow_unsafe_fun 1` to enable shell and code execution unless you are sure you know what you are doing.
 
 To mitigate risks, we recommend at least [running the agent from a limited user](#Running-the-agent-from-a-temporary-user-in-Linux). For additional security, consider using a [Docker](https://www.docker.com/) or [Bubblewrap](https://github.com/containers/bubblewrap) container, or running the agent in a virtual machine with non sensitive information.
@@ -113,7 +113,7 @@ The agent uses a system prompt defined in `system_prompt.md`. You can modify thi
 
 ### Chat History
 
-The user queries and repplies for the model are logged in `.chat.history` for reference. The history of user inputs is logged in `.prompt_history`.
+The user queries and repplies for the model are logged in `.chat.history` for reference. The history of user inputs is logged in `.prompt_history` and the log of function calls from the model in `.function_calls.log`.
 
 
 ## Running the agent from a temporary user in Linux
