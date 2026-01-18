@@ -366,14 +366,14 @@ def main():
                 print(f"→ ERROR: {e}")
                 continue
 
-            history_file.write(PROMPT_PREFIX + user_query + '\n')
+            history_file.write(PROMPT_PREFIX + user_query + '\n***\n')
             input_list.append({"role": "user", "content": user_query})
 
             response_text = process_user_query(user_query, use_functions, allow_unsafe_fun,
                                                verbose, working_directory, client, variables, 
                                                input_list)
 
-            history_file.write('\n' + response_text + '\n\n')
+            history_file.write('\n' + response_text + '\n***\n')
             print('\n' + response_text + '\n')
 
 
