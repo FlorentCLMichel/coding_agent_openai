@@ -36,7 +36,7 @@ Always review inputs carefully, especially when enabling unsafe functions.
 
 ### Best Practices
 
-1. **Sandboxing**: Run the agent in a sandboxed environment (e.g., Docker container or VM) with:
+1. **Sandboxing**: Run the agent in a sandboxed environment (*e.g.*, a Docker container or virtual machine) with:
    - Restricted network access.
    - A read-only filesystem where possible.
    - Minimal permissions.
@@ -44,7 +44,7 @@ Always review inputs carefully, especially when enabling unsafe functions.
 3. **Review Logs**: Audit the agent’s actions by reviewing `.chat.history`, `.prompt_history`, and `.function_calls.log`.
 4. **Disable High-Risk Features**: Do not use `/allow_unsafe_fun 1` to enable shell and code execution unless you are sure you know what you are doing.
 
-To mitigate risks, we recommend at least [running the agent from a limited user](#Running-the-agent-from-a-temporary-user-in-Linux). For additional security, consider using a [Docker](https://www.docker.com/) or [Bubblewrap](https://github.com/containers/bubblewrap) container, or running the agent in a virtual machine with no sensitive information.
+To mitigate risks, we recommend at least [running the agent from a limited user](#Running-the-agent-from-a-temporary-user-in-Linux). For additional security, consider using a [Docker](https://www.docker.com/) or [Bubblewrap](https://github.com/containers/bubblewrap) container, or running the agent in a virtual (or physical) machine with no sensitive information. Always back-up any important data somewhere the agent has no access before running it.
 
 ## Features
 
