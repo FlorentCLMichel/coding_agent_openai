@@ -382,7 +382,8 @@ def main():
                                            verbose, working_directory, client, variables, 
                                            input_list)
 
-        reprint('\n' + response_text + '\n')
+        if response_text:
+            reprint('\n' + response_text + '\n')
 
 
 if __name__ == "__main__":
