@@ -11,6 +11,7 @@ from functions.run_sh_command import *
 from functions.run_python_file import *
 from functions.compile_c import *
 from functions.rust import *
+from functions.utils import reprint
 
 safer_functions = {
     "get_files_info": get_files_info,
@@ -50,7 +51,7 @@ def call_function(function_name, function_args, verbose=False, working_directory
 
     function_args = json.loads(function_args)
     if verbose:
-        print(f"→ Calling function: {function_name}({function_args})")
+        reprint(f"→ Calling function: {function_name}({function_args})")
     if function_name in safer_functions.keys():
         function_args["working_directory"] = working_directory
         try: 

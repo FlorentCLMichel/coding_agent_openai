@@ -13,6 +13,7 @@ from prompt_toolkit.styles import Style
 
 from functions.interface import call_function
 from functions.tools import safer_tools, unsafe_tools
+from functions.utils import HISTORY_FILE, reprint
 
 PROMPT_PREFIX = "\u276f "
 
@@ -47,6 +48,7 @@ custom_style = Style.from_dict({
     'input': '#ffffff',
 })
 
+
 def read_file(file_name: str) -> str:
     """
     Read the content of a file and return it as a string.
@@ -74,7 +76,7 @@ def load_env_var(var: str, store: dict):
     var_up = var.upper()
     store[var] = environ.get(var_up)
     if not store[var]:
-        print(f"→ ERROR: Environment variable " + var_up + " not set")
+        reprint(f"→ ERROR: Environment variable " + var_up + " not set")
         exit(1)
 
 def initialize_client(variables: dict):
@@ -98,7 +100,7 @@ def initialize_client(variables: dict):
         client.models.list()  # Example call to test the connection
         return client
     except Exception as e:
-        print(f"→ ERROR: Could not set-up the client: {e}")
+        reprint(f"→ ERROR: Could not set-up the client: {e}")
         exit(1)
 
 def handle_allow_unsafe_fun(user_query_split: list):
@@ -118,7 +120,7 @@ def handle_allow_unsafe_fun(user_query_split: list):
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for /allow_unsafe_fun")
         allow_unsafe_fun = bool(int(user_query_split[1]))
-        print(f"\u2192 Use of unsafe functions allowed: {allow_unsafe_fun}")
+        reprint(f"\u2192 Use of unsafe functions allowed: {allow_unsafe_fun}")
         return allow_unsafe_fun
     except ValueError as e:
         raise ValueError(f"Invalid input for /allow_unsafe_fun: {e}")
@@ -133,7 +135,7 @@ def handle_help():
     """
     Display the help message to the user.
     """
-    print(HELP_MESSAGE)
+    reprint(HELP_MESSAGE)
 
 def handle_file_command(user_query_split: list):
     """
@@ -177,10 +179,10 @@ def handle_use_functions_command(user_query_split: list):
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for /use_functions")
         use_functions = bool(int(user_query_split[1]))
-        print(f"\u279c Ability to use functions {use_functions}")
+        reprint(f"\u279c Ability to use functions {use_functions}")
         return use_functions
     except ValueError as e:
-        raise Exception(f"\u279c ERROR: Invalid input for /use_functions: {e}")
+        raise Exception(f"→ ERROR: Invalid input for /use_functions: {e}")
 
 def handle_verbose_command(user_query_split: list):
     """
@@ -199,7 +201,7 @@ def handle_verbose_command(user_query_split: list):
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for /verbose")
         verbose = bool(int(user_query_split[1]))
-        print(f"\u2192 Verbose mode {verbose}")
+        reprint(f"\u2192 Verbose mode {verbose}")
         return verbose
     except ValueError as e:
         raise ValueError(f"Invalid input for /verbose: {e}")
@@ -223,10 +225,10 @@ def handle_wd_command(user_query_split: list):
         new_directory = user_query_split[1]
         if not path.isdir(new_directory):
             raise FileNotFoundError(f"Directory does not exist: {new_directory}")
-        print(f"\u279c New working directory: {new_directory}")
+        reprint(f"\u279c New working directory: {new_directory}")
         return new_directory
     except Exception as e:
-        raise Exception(f"ERROR: Could not change working directory: {e}")
+        raise Exception(f"→ ERROR: Could not change working directory: {e}")
 
 def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: bool,
                        verbose: bool, working_directory: str, client, variables: dict, 
@@ -256,35 +258,43 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
             tools += unsafe_tools
     else:
         tools = []
-    reasoning = True
-    while reasoning:
-        reasoning = False
+    finished = False
+    while not finished:
         try:
             response = client.responses.create(
                 model=variables["model"],
                 tools=tools,
                 input=input_list,
             )
+
+            if response.output_text:
+                finished = True
+                reprint('\n' + response.output_text + '\n')
             if not hasattr(response, "output"):
                 raise ValueError("Invalid response structure: missing 'output' field")
+        
         except Exception as e:
-            print(f"\u2192 ERROR: {e}")
-            exit(1)
+            reprint(f"→ ERROR: {e}")
+            return ""
 
         input_list += response.output
 
-        if use_functions:
-            for item in response.output:
-                if not hasattr(item, "type") or item.type != "function_call":
-                    continue
+        for item in response.output:
+            if not hasattr(item, "type"):
+                continue
+            if item.type == "reasoning":
+                if verbose:
+                    reprint(f'→ Reasoning: {"\n".join(map(lambda x: x.text, item.content))}')
+                continue
+            if use_functions and item.type == "function_call":
+                finished = False
                 if not hasattr(item, "name") or not hasattr(item, "arguments"):
                     raise ValueError("Invalid function call structure")
-                reasoning = True
                 output = call_function(item.name, item.arguments, verbose=verbose, 
                                        working_directory=working_directory,
                                        allow_unsafe_fun=allow_unsafe_fun)
                 if verbose:
-                    print(f'→ Function output: {output}')
+                    reprint(f'→ Function output: {output}')
                 input_list.append({
                     "type": "function_call_output",
                     "call_id": item.call_id,
@@ -292,8 +302,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
                         "output": output
                     })
                 })
-
-    return response.output_text
+                continue
 
 def main():
     """
@@ -320,61 +329,60 @@ def main():
     # Initialize prompt_toolkit history
     history = FileHistory('.prompt_history')
 
-    with open(".chat.history", "a") as history_file:
-        while True:
-            try:
-                # Use prompt_toolkit for user input
-                user_query = prompt(
-                    PROMPT_PREFIX,
-                    completer=CustomCompleter(command_completer),
-                    history=history,
-                    auto_suggest=AutoSuggestFromHistory(),
-                    style=custom_style,
-                    complete_while_typing=True
-                ).strip()
-            except KeyboardInterrupt:
-                continue  # Handle Ctrl+C gracefully
-            except EOFError:
-                break  # Handle Ctrl+D gracefully
+    while True:
+        try:
+            # Use prompt_toolkit for user input
+            user_query = prompt(
+                PROMPT_PREFIX,
+                completer=CustomCompleter(command_completer),
+                history=history,
+                auto_suggest=AutoSuggestFromHistory(),
+                style=custom_style,
+                complete_while_typing=True
+            ).strip()
+        except KeyboardInterrupt:
+            continue  # Handle Ctrl+C gracefully
+        except EOFError:
+            break  # Handle Ctrl+D gracefully
 
-            user_query_split = user_query.split()
-            if not user_query_split:
-                continue
+        user_query_split = user_query.split()
+        if not user_query_split:
+            continue
 
-            try:
-                match user_query_split[0]:
-                    case '/allow_unsafe_fun':
-                        allow_unsafe_fun = handle_allow_unsafe_fun(user_query_split)
-                        continue
-                    case '/exit':
-                        handle_exit()
-                    case '/help':
-                        handle_help()
-                        continue
-                    case '/file':
-                        user_query = handle_file_command(user_query_split)
-                    case '/use_functions':
-                        use_functions = handle_use_functions_command(user_query_split)
-                        continue
-                    case '/verbose':
-                        verbose = handle_verbose_command(user_query_split)
-                        continue
-                    case '/wd':
-                        working_directory = handle_wd_command(user_query_split)
-                        continue
-            except Exception as e:
-                print(f"→ ERROR: {e}")
-                continue
+        try:
+            match user_query_split[0]:
+                case '/allow_unsafe_fun':
+                    allow_unsafe_fun = handle_allow_unsafe_fun(user_query_split)
+                    continue
+                case '/exit':
+                    handle_exit()
+                case '/help':
+                    handle_help()
+                    continue
+                case '/file':
+                    user_query = handle_file_command(user_query_split)
+                case '/use_functions':
+                    use_functions = handle_use_functions_command(user_query_split)
+                    continue
+                case '/verbose':
+                    verbose = handle_verbose_command(user_query_split)
+                    continue
+                case '/wd':
+                    working_directory = handle_wd_command(user_query_split)
+                    continue
+        except Exception as e:
+            reprint(f"→ ERROR: {e}")
+            continue
 
-            history_file.write(PROMPT_PREFIX + user_query + '\n***\n')
-            input_list.append({"role": "user", "content": user_query})
+        with open(HISTORY_FILE, "a") as history_file:
+            history_file.write(PROMPT_PREFIX + user_query + '\n\n')
+        input_list.append({"role": "user", "content": user_query})
 
-            response_text = process_user_query(user_query, use_functions, allow_unsafe_fun,
-                                               verbose, working_directory, client, variables, 
-                                               input_list)
+        response_text = process_user_query(user_query, use_functions, allow_unsafe_fun,
+                                           verbose, working_directory, client, variables, 
+                                           input_list)
 
-            history_file.write('\n' + response_text + '\n***\n')
-            print('\n' + response_text + '\n')
+        reprint('\n' + response_text + '\n')
 
 
 if __name__ == "__main__":
