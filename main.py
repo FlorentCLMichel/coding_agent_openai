@@ -48,7 +48,6 @@ custom_style = Style.from_dict({
     'input': '#ffffff',
 })
 
-
 def read_file(file_name: str) -> str:
     """
     Read the content of a file and return it as a string.
@@ -269,7 +268,6 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
 
             if response.output_text:
                 finished = True
-                reprint('\n' + response.output_text + '\n')
             if not hasattr(response, "output"):
                 raise ValueError("Invalid response structure: missing 'output' field")
         
@@ -281,10 +279,6 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
 
         for item in response.output:
             if not hasattr(item, "type"):
-                continue
-            if item.type == "reasoning":
-                if verbose:
-                    reprint(f'→ Reasoning: {"\n".join(map(lambda x: x.text, item.content))}')
                 continue
             if use_functions and item.type == "function_call":
                 finished = False
@@ -303,6 +297,13 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
                     })
                 })
                 continue
+            if item.type != 'message' and item.content:
+                if verbose:
+                    reprint(f'→ Response type `{item.type}`: {"\n".join(map(lambda x: x.text, item.content))}')
+                continue
+        
+        if response.output_text:
+            reprint('\n💻 ' + response.output_text + '\n\n')
 
 def main():
     """
