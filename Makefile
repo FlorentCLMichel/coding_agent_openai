@@ -7,4 +7,4 @@ clean:
 	rm -f .function_calls.log
 	rm -f .prompt_history
 	rm -f log.txt
-	rm -f test/log.txt
+	rm -f test/*

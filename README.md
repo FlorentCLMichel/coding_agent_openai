@@ -118,6 +118,7 @@ The agent supports the following commands (all starting with `/`):
 * `/file <filename>`: Read the content of `<filename>` and treat it as a user query.
 * `/verbose [0,1]`: Set verbose mode on (1) or off (0) (default: off).
 * `/wd <directory>`: Change the working directory.
+* `/reset_context` : Reset the context.
 * `/use_functions [0,1]`: Turn the ability to use functions on (1) or off (0) (default: on).
 * `/allow_unsafe_fun [0,1]`: Turn the ability to run unsafe functions on (1) or off (0) (default: off).
 
