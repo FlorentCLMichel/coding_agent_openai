@@ -1,9 +1,9 @@
 from dotenv import load_dotenv
 from openai import OpenAI
-from openai.error import RateLimitError
 from os import environ, path
 from time import sleep
 
+import openai
 import json
 import readline
 
@@ -254,7 +254,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
     Raises:
         SystemExit: If an error occurs during the processing of the query.
     """
-    wait_time_s = variables[TIME_BETWEEN_QUERIES_S]
+    wait_time_s = float(variables["time_between_queries_s"])
     if use_functions:
         tools = safer_tools
         if allow_unsafe_fun:
@@ -263,7 +263,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
         tools = []
     finished = False
     while not finished:
-        time.sleep(wait_time_s)
+        sleep(wait_time_s)
         try:
             response = client.responses.create(
                 model=variables["model"],
@@ -276,11 +276,11 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
             if not hasattr(response, "output"):
                 raise ValueError("Invalid response structure: missing 'output' field")
         
-        except RateLimitError as e:
+        except openai.RateLimitError as e:
             reprint(f"→ ERROR: {e}")
-            wait_time_s = 2*wait_time_s + TIME_INCREMENT_S
+            wait_time_s = 2*wait_time_s + float(variables["time_increment_s"])
             reprint(f"→ SYSTEM: Increasing wait time to {wait_time_s}s")
-            return ""
+            continue
 
         except Exception as e:
             reprint(f"→ ERROR: {e}")
@@ -315,6 +315,8 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
         
         if response.output_text:
             reprint('\n💻 ' + response.output_text + '\n\n')
+
+        wait_time_s = (wait_time_s + float(variables["time_between_queries_s"])) / 2.
 
 def main():
     """
