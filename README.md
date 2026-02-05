@@ -72,6 +72,8 @@ The code requires the following environment variables:
 * `CC`: Command to use for compiling C code (default: `gcc`)
 * `CXX`: Command to use for compiling C code (default: `g++`)
 * `MODEL`: Name of the model to use
+* `TIME_BETWEEN_QUERIES_S`: Initial time between queries in seconds.
+* `TIME_INCREMENT_S`: Time increment when rate limit exceeded in seconds.
 
 You can either set these explicitly or store them in a `.env` file. Here's an example `.env` file (replace `<your-API-key>` with your actual key):
 
@@ -80,7 +82,9 @@ API_KEY=<your-API-key>
 BASE_URL=https://openrouter.ai/api/v1
 CC="gcc"
 CXX="g++"
-MODEL=mistralai/devstral-2512:free
+MODEL=openai/gpt-oss-120b:free
+TIME_BETWEEN_QUERIES_S=0.1
+TIME_INCREMENT_S=10
 ```
 
 ### Installation
