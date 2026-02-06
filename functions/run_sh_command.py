@@ -9,6 +9,7 @@ def run_sh_command(working_directory, cmd) -> str:
             capture_output=True,
             shell=True,
             timeout=TIMEOUT,
+            cwd=working_directory,
         )
         output = []
         if result.stdout:

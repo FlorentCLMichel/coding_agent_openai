@@ -23,7 +23,7 @@ def compile_cc(working_directory, args, dir_path='.') -> str :
 
 def compile_cxx(working_directory, args, dir_path='.') -> str :
     full_path = os.path.join(working_directory, dir_path)
-    if not(path_is_parent(working_directory, dir_path)):
+    if not(path_is_parent(working_directory, full_path)):
         return f'ERROR: Cannot write "{dir_path}" as it is outside the permitted working directory {working_directory}'
     try:
         log_file_path = dir_path + "/log.txt"

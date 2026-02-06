@@ -13,6 +13,8 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.styles import Style
 
+from shutil import copy2, copytree
+
 from functions.interface import call_function
 from functions.tools import safer_tools, unsafe_tools
 from functions.utils import HISTORY_FILE, reprint
@@ -26,12 +28,13 @@ HELP_MESSAGE = '''Available commands:
   /verbose [0,1] : turn verbose mode on (1) or off (0) (default: OFF)
   /wd <directory> : change the working directory
   /reset_context : reset the context
+  /skills : copy skill files to the working directory
   /use_functions [0,1] : turn the ability to use functions on (1) or off (0) (default: ON)
   /allow_unsafe_fun [0,1] : turn the ability to run unsafe functions on (1) or off (0) (default: OFF)
 '''
 
 commands = [
-    '/allow_unsafe_fun', '/exit', '/file', '/help', '/reset_context', '/use_functions', '/verbose', '/wd',
+    '/allow_unsafe_fun', '/exit', '/file', '/help', '/reset_context', '/skills', '/use_functions', '/verbose', '/wd',
 ]
 
 command_completer = WordCompleter(commands, sentence=True)
@@ -163,6 +166,19 @@ def handle_file_command(user_query_split: list):
         raise Exception(f"Permission denied for file: {fname}")
     except Exception as e:
         raise Exception(f"Unexpected error while reading file: {e}")
+
+def handle_skills_command(working_directory: str):
+    """
+    Handle the /use_functions command to allow the use of skills. 
+    """
+    # Copy skill files to the working directory
+    copy2("SKILLS.md", working_directory + '/') 
+    copytree("skills", working_directory + '/skills', dirs_exist_ok=True) 
+
+    reprint("→ Skill use enabled (you will need to run this command again if changing the working directory)")
+    
+    # Add skills information to the system prompt
+    return {"role": "system", "content": "You may use skills defined in SKILLS.md"}
 
 def handle_use_functions_command(user_query_split: list):
     """
@@ -379,6 +395,9 @@ def main():
                     user_query = handle_file_command(user_query_split)
                 case '/reset_context':
                     input_list = [{"role": "system", "content": system_prompt}]
+                case '/skills':
+                    input_list.append(handle_skills_command(working_directory))
+                    continue
                 case '/use_functions':
                     use_functions = handle_use_functions_command(user_query_split)
                     continue
