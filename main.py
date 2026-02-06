@@ -178,7 +178,8 @@ def handle_skills_command(working_directory: str):
     reprint("→ Skill use enabled (you will need to run this command again if changing the working directory)")
     
     # Add skills information to the system prompt
-    return {"role": "system", "content": "You may use skills defined in SKILLS.md"}
+    with open("SKILLS.md") as file:
+        return {"role": "system", "content": file.read()}
 
 def handle_use_functions_command(user_query_split: list):
     """
