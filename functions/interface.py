@@ -49,7 +49,10 @@ def call_function(function_name, function_args, verbose=False, working_directory
         f"Allow Unsafe Functions: {allow_unsafe_fun}"
     )
 
-    function_args = json.loads(function_args)
+    try:
+        function_args = json.loads(function_args)
+    except Exception as e:
+        return f"ERROR reading arguments {function_args}: {e}"
     if verbose:
         reprint(f"→ Calling function: {function_name}({function_args})")
     if function_name in safer_functions.keys():
