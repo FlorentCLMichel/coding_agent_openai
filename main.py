@@ -35,7 +35,7 @@ HELP_MESSAGE = '''Available commands:
 '''
 
 commands = [
-    '/allow_unsafe_fun', '/exit', '/file', '/help', '/reset_context', '/skills', 'system_prompt', '/use_functions', '/verbose', '/wd',
+    '/allow_unsafe_fun', '/exit', '/file', '/help', '/reset_context', '/skills', '/system_prompt', '/use_functions', '/verbose', '/wd',
 ]
 
 command_completer = WordCompleter(commands, sentence=True)
@@ -398,8 +398,12 @@ def main():
                 case '/system_prompt':
                     system_prompt = handle_file_command(user_query_split)
                     input_list = [{"role": "system", "content": system_prompt}]
+                    reprint(f"→ SYSTEM: System prompt changed")
+                    continue
                 case '/reset_context':
                     input_list = [{"role": "system", "content": system_prompt}]
+                    reprint(f"→ SYSTEM: Context resetted")
+                    continue
                 case '/skills':
                     input_list.append(handle_skills_command(working_directory))
                     continue
