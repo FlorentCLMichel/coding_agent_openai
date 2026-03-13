@@ -24,7 +24,8 @@ PROMPT_PREFIX = "\u276f "
 HELP_MESSAGE = '''Available commands:
   /help : print this help message
   /exit : leave the chat
-  /file : load prompt from a file
+  /file <filename> : load prompt from a file
+  /system_prompt <filename> : load the system prompt from a file and reset the context
   /verbose [0,1] : turn verbose mode on (1) or off (0) (default: OFF)
   /wd <directory> : change the working directory
   /reset_context : reset the context
@@ -34,7 +35,7 @@ HELP_MESSAGE = '''Available commands:
 '''
 
 commands = [
-    '/allow_unsafe_fun', '/exit', '/file', '/help', '/reset_context', '/skills', '/use_functions', '/verbose', '/wd',
+    '/allow_unsafe_fun', '/exit', '/file', '/help', '/reset_context', '/skills', 'system_prompt', '/use_functions', '/verbose', '/wd',
 ]
 
 command_completer = WordCompleter(commands, sentence=True)
@@ -394,6 +395,9 @@ def main():
                     continue
                 case '/file':
                     user_query = handle_file_command(user_query_split)
+                case '/system_prompt':
+                    system_prompt = handle_file_command(user_query_split)
+                    input_list = [{"role": "system", "content": system_prompt}]
                 case '/reset_context':
                     input_list = [{"role": "system", "content": system_prompt}]
                 case '/skills':

@@ -120,6 +120,7 @@ The agent supports the following commands (all starting with `/`):
 * `/help`: Print a help message.
 * `/exit`: Exit the program.
 * `/file <filename>`: Read the content of `<filename>` and treat it as a user query.
+* `/system_prompt <filename>`: Read the content of `<filename>` and use it as system prompt.
 * `/verbose [0,1]`: Set verbose mode on (1) or off (0) (default: off).
 * `/wd <directory>`: Change the working directory.
 * `/reset_context` : Reset the context.
