@@ -158,7 +158,7 @@ def handle_file_command(user_query_split: list):
     """
     try:
         if len(user_query_split) < 2:
-            raise ValueError("Missing argument for /file")
+            raise ValueError("Missing argument for (file name)")
         fname = user_query_split[1]
         return read_file(fname)
     except FileNotFoundError:
