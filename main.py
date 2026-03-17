@@ -302,7 +302,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
 
         except Exception as e:
             reprint(f"→ ERROR: {e}")
-            return ""
+            return
         
         input_list += response.output
 
@@ -328,11 +328,12 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
                 continue
             if item.type != 'message' and item.content:
                 if verbose:
-                    reprint(f'→ Response type `{item.type}`: {"\n".join(filter(None, map(lambda x: x.text, item.content)))}')
+                    reprint(f'→ Response type `{item.type}`: {"\n".join(filter(None, map(lambda x: x.text.strip(), item.content)))}')
                 continue
         
-        if response.output_text:
-            reprint('\n💻 ' + response.output_text + '\n\n')
+        final_response = response.output_text.strip()
+        if final_response:
+            reprint('\n💻 ' + final_response + '\n\n')
 
         wait_time_s = (wait_time_s + float(variables["time_between_queries_s"])) / 2.
 
@@ -424,12 +425,9 @@ def main():
             history_file.write(PROMPT_PREFIX + user_query + '\n\n')
         input_list.append({"role": "user", "content": user_query})
 
-        response_text = process_user_query(user_query, use_functions, allow_unsafe_fun,
-                                           verbose, working_directory, client, variables, 
-                                           input_list)
-
-        if response_text:
-            reprint('\n' + response_text + '\n')
+        process_user_query(user_query, use_functions, allow_unsafe_fun,
+                           verbose, working_directory, client, variables, 
+                           input_list)
 
 
 if __name__ == "__main__":
