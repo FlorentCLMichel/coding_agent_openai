@@ -126,7 +126,7 @@ def handle_allow_unsafe_fun(user_query_split: list):
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for /allow_unsafe_fun")
         allow_unsafe_fun = bool(int(user_query_split[1]))
-        reprint(f"\u2192 Use of unsafe functions allowed: {allow_unsafe_fun}")
+        reprint(f"→ Use of unsafe functions allowed: {allow_unsafe_fun}")
         return allow_unsafe_fun
     except ValueError as e:
         raise ValueError(f"Invalid input for /allow_unsafe_fun: {e}")
@@ -199,7 +199,7 @@ def handle_use_functions_command(user_query_split: list):
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for /use_functions")
         use_functions = bool(int(user_query_split[1]))
-        reprint(f"\u279c Ability to use functions {use_functions}")
+        reprint(f"→ Ability to use functions {use_functions}")
         return use_functions
     except ValueError as e:
         raise Exception(f"→ ERROR: Invalid input for /use_functions: {e}")
@@ -221,7 +221,7 @@ def handle_verbose_command(user_query_split: list):
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for /verbose")
         verbose = bool(int(user_query_split[1]))
-        reprint(f"\u2192 Verbose mode {verbose}")
+        reprint(f"→ Verbose mode {verbose}")
         return verbose
     except ValueError as e:
         raise ValueError(f"Invalid input for /verbose: {e}")
@@ -245,7 +245,7 @@ def handle_wd_command(user_query_split: list):
         new_directory = user_query_split[1]
         if not path.isdir(new_directory):
             raise FileNotFoundError(f"Directory does not exist: {new_directory}")
-        reprint(f"\u279c New working directory: {new_directory}")
+        reprint(f"→ New working directory: {new_directory}")
         return new_directory
     except Exception as e:
         raise Exception(f"→ ERROR: Could not change working directory: {e}")
@@ -328,7 +328,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
                 continue
             if item.type != 'message' and item.content:
                 if verbose:
-                    reprint(f'→ Response type `{item.type}`: {"\n".join(map(lambda x: x.text, item.content))}')
+                    reprint(f'→ Response type `{item.type}`: {"\n".join(filter(None, map(lambda x: x.text, item.content)))}')
                 continue
         
         if response.output_text:
