@@ -24,6 +24,7 @@ PROMPT_PREFIX = "\u276f "
 HELP_MESSAGE = '''Available commands:
   /help : print this help message
   /exit : leave the chat
+  /multiline [0,1] : turn multiline prompts on (1) off (0) (default: ON)
   /file <filename> : load prompt from a file
   /system_prompt <filename> : load the system prompt from a file and reset the context
   /verbose [0,1] : turn verbose mode on (1) or off (0) (default: OFF)
@@ -35,7 +36,8 @@ HELP_MESSAGE = '''Available commands:
 '''
 
 commands = [
-    '/allow_unsafe_fun', '/exit', '/file', '/help', '/reset_context', '/skills', '/system_prompt', '/use_functions', '/verbose', '/wd',
+    '/allow_unsafe_fun', '/exit', '/file', '/help', '/multiline', '/reset_context', 
+    '/skills', '/system_prompt', '/use_functions', '/verbose', '/wd',
 ]
 
 command_completer = WordCompleter(commands, sentence=True)
@@ -108,6 +110,28 @@ def initialize_client(variables: dict):
     except Exception as e:
         reprint(f"→ ERROR: Could not set-up the client: {e}")
         exit(1)
+
+def handle_multiline(user_query_split: list):
+    """
+    Handle the /multiline command to toggle multiline prompts.
+    
+    Args:
+        user_query_split (list): A list of strings representing the user's query split by spaces.
+    
+    Returns:
+        bool: The new state of the multiline flag.
+    
+    Raises:
+        ValueError: If the argument is missing or invalid.
+    """
+    try:
+        if len(user_query_split) < 2:
+            raise ValueError("Missing argument for /multiline")
+        multiline = bool(int(user_query_split[1]))
+        reprint(f"→ Multiline prompts: {multiline}")
+        return multiline
+    except ValueError as e:
+        raise ValueError(f"Invalid input for /multiline: {e}")
 
 def handle_allow_unsafe_fun(user_query_split: list):
     """
@@ -347,6 +371,7 @@ def main():
     verbose = False
     allow_unsafe_fun = False
     use_functions = True
+    multiline = True
 
     load_dotenv()
     variables = {}
@@ -373,7 +398,8 @@ def main():
                 history=history,
                 auto_suggest=AutoSuggestFromHistory(),
                 style=custom_style,
-                complete_while_typing=True
+                complete_while_typing=True,
+                multiline=multiline
             ).strip()
         except KeyboardInterrupt:
             continue  # Handle Ctrl+C gracefully
@@ -396,6 +422,9 @@ def main():
                     continue
                 case '/file':
                     user_query = handle_file_command(user_query_split)
+                case '/multiline':
+                    multiline = handle_multiline(user_query_split)
+                    continue
                 case '/system_prompt':
                     system_prompt = handle_file_command(user_query_split)
                     input_list = [{"role": "system", "content": system_prompt}]
