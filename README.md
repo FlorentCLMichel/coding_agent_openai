@@ -119,7 +119,7 @@ The agent supports the following commands (all starting with `/`):
 
 * `/help`: Print a help message.
 * `/exit`: Exit the program.
-* `/multiline [0,1]`: Turn multiline prompts on (1) or off (0) (default: on). If multiline prompts are on, you can send the prompt with `escape` followed by `enter`.
+* `/multiline [0,1]`: Turn multiline prompts on (1) or off (0) (default: off). If multiline prompts are on, you can send the prompt with `escape` followed by `enter`.
 * `/file <filename>`: Read the content of `<filename>` and treat it as a user query.
 * `/system_prompt <filename>`: Read the content of `<filename>` and use it as system prompt.
 * `/verbose [0,1]`: Set verbose mode on (1) or off (0) (default: off).

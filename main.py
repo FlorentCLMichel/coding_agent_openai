@@ -24,7 +24,7 @@ PROMPT_PREFIX = "\u276f "
 HELP_MESSAGE = '''Available commands:
   /help : print this help message
   /exit : leave the chat
-  /multiline [0,1] : turn multiline prompts on (1) off (0) (default: ON)
+  /multiline [0,1] : turn multiline prompts on (1) off (0) (default: OFF)
   /file <filename> : load prompt from a file
   /system_prompt <filename> : load the system prompt from a file and reset the context
   /verbose [0,1] : turn verbose mode on (1) or off (0) (default: OFF)
@@ -371,7 +371,7 @@ def main():
     verbose = False
     allow_unsafe_fun = False
     use_functions = True
-    multiline = True
+    multiline = False
 
     load_dotenv()
     variables = {}
