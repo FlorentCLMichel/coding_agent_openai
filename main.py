@@ -22,22 +22,24 @@ from functions.utils import HISTORY_FILE, reprint
 PROMPT_PREFIX = "\u276f "
 
 HELP_MESSAGE = '''Available commands:
-  /help : print this help message
+  /allow_unsafe_fun [0,1] : turn the ability to run unsafe functions on (1) or off (0) (default: OFF)
   /exit : leave the chat
-  /multiline [0,1] : turn multiline prompts on (1) off (0) (default: OFF)
   /file <filename> : load prompt from a file
+  /help : print this help message
+  /load <filename> : load a conversation from a file
+  /multiline [0,1] : turn multiline prompts on (1) off (0) (default: OFF)
+  /reset_context : reset the context
+  /save <filename> : save the current conversation in a file
+  /skills : copy skill files to the working directory
   /system_prompt <filename> : load the system prompt from a file and reset the context
+  /use_functions [0,1] : turn the ability to use functions on (1) or off (0) (default: ON)
   /verbose [0,1] : turn verbose mode on (1) or off (0) (default: OFF)
   /wd <directory> : change the working directory
-  /reset_context : reset the context
-  /skills : copy skill files to the working directory
-  /use_functions [0,1] : turn the ability to use functions on (1) or off (0) (default: ON)
-  /allow_unsafe_fun [0,1] : turn the ability to run unsafe functions on (1) or off (0) (default: OFF)
 '''
 
 commands = [
-    '/allow_unsafe_fun', '/exit', '/file', '/help', '/multiline', '/reset_context', 
-    '/skills', '/system_prompt', '/use_functions', '/verbose', '/wd',
+    '/allow_unsafe_fun', '/exit', '/file', '/help', '/load', '/multiline', '/reset_context', 
+    '/save', '/skills', '/system_prompt', '/use_functions', '/verbose', '/wd',
 ]
 
 command_completer = WordCompleter(commands, sentence=True)
@@ -167,7 +169,7 @@ def handle_help():
     """
     reprint(HELP_MESSAGE)
 
-def handle_file_command(user_query_split: list):
+def handle_file_command(user_query_split: list) -> str:
     """
     Handle the /file command to read a file and return its content.
     
@@ -185,6 +187,66 @@ def handle_file_command(user_query_split: list):
             raise ValueError("Missing argument for (file name)")
         fname = user_query_split[1]
         return read_file(fname)
+    except FileNotFoundError:
+        raise Exception(f"File not found: {fname}")
+    except PermissionError:
+        raise Exception(f"Permission denied for file: {fname}")
+    except Exception as e:
+        raise Exception(f"Unexpected error while reading file: {e}")
+
+def handle_load_command(user_query_split: list):
+    """
+    Handle the /load command to load a conversation from a file.
+    
+    Args:
+        user_query_split (list): A list of strings representing the user's query split by spaces.
+    
+    Returns:
+        List: The loaded conversation.
+    
+    Raises:
+        Exception: If the file is not found, permission is denied, or an unexpected error occurs.
+    """
+    try:
+        if len(user_query_split) < 2:
+            raise ValueError("Missing argument for (file name)")
+        fname = user_query_split[1]
+        with open(fname, "r", encoding="utf-8") as f:
+            conversation = json.load(f)
+            reprint(f"SYSTEM: File {fname} loaded successfully.")
+            return conversation
+    except FileNotFoundError:
+        raise Exception(f"File not found: {fname}")
+    except PermissionError:
+        raise Exception(f"Permission denied for file: {fname}")
+    except Exception as e:
+        raise Exception(f"Unexpected error while reading file: {e}")
+
+def json_serializable(obj):
+    """Fallback to convert Pydantic/OpenAI objects to dicts."""
+    if hasattr(obj, 'model_dump'):
+        return obj.model_dump()
+    if hasattr(obj, '__dict__'):
+        return obj.__dict__
+    return str(obj)
+
+def handle_save_command(user_query_split: list, conversation: list):
+    """
+    Handle the /save command to save the conversation into a file.
+    
+    Args:
+        user_query_split (list): A list of strings representing the user's query split by spaces.
+    
+    Raises:
+        Exception: If the file is not found, permission is denied, or an unexpected error occurs.
+    """
+    try:
+        if len(user_query_split) < 2:
+            raise ValueError("Missing argument for (file name)")
+        fname = user_query_split[1]
+        with open(fname, "w", encoding="utf-8") as file:
+            json.dump(conversation, file, indent=4, default=json_serializable)
+            reprint(f"SYSTEM: Conversation saved to {fname}")
     except FileNotFoundError:
         raise Exception(f"File not found: {fname}")
     except PermissionError:
@@ -276,7 +338,7 @@ def handle_wd_command(user_query_split: list):
 
 def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: bool,
                        verbose: bool, working_directory: str, client, variables: dict, 
-                       input_list: list):
+                       conversation: list):
     """
     Process the user's query and generate a response using the OpenAI client.
     
@@ -288,7 +350,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
         working_directory (str): The current working directory.
         client: The OpenAI client used to generate the response.
         variables (dict): A dictionary containing configuration variables.
-        input_list (list): A list of input messages for the conversation.
+        conversation (list): A list of input messages for the conversation.
     
     Returns:
         str: The generated response text.
@@ -310,7 +372,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
             response = client.responses.create(
                 model=variables["model"],
                 tools=tools,
-                input=input_list,
+                input=conversation,
             )
 
             if response.output_text:
@@ -328,7 +390,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
             reprint(f"→ ERROR: {e}")
             return
         
-        input_list += response.output
+        conversation += response.output
 
         for item in response.output:
             if not hasattr(item, "type"):
@@ -342,7 +404,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
                                        allow_unsafe_fun=allow_unsafe_fun)
                 if verbose:
                     reprint(f'→ Function output: {output}')
-                input_list.append({
+                conversation.append({
                     "type": "function_call_output",
                     "call_id": item.call_id,
                     "output": json.dumps({
@@ -384,7 +446,7 @@ def main():
     client = initialize_client(variables)
 
     system_prompt = read_file("system_prompt.md")
-    input_list = [{"role": "system", "content": system_prompt}]
+    conversation = [{"role": "system", "content": system_prompt}]
 
     # Initialize prompt_toolkit history
     history = FileHistory('.prompt_history')
@@ -422,20 +484,26 @@ def main():
                     continue
                 case '/file':
                     user_query = handle_file_command(user_query_split)
+                case '/load':
+                    conversation = handle_load_command(user_query_split)
+                    continue
                 case '/multiline':
                     multiline = handle_multiline(user_query_split)
                     continue
-                case '/system_prompt':
-                    system_prompt = handle_file_command(user_query_split)
-                    input_list = [{"role": "system", "content": system_prompt}]
-                    reprint(f"→ SYSTEM: System prompt changed")
-                    continue
                 case '/reset_context':
-                    input_list = [{"role": "system", "content": system_prompt}]
+                    conversation = [{"role": "system", "content": system_prompt}]
                     reprint(f"→ SYSTEM: Context resetted")
                     continue
+                case '/save':
+                    handle_save_command(user_query_split, conversation)
+                    continue
+                case '/system_prompt':
+                    system_prompt = handle_file_command(user_query_split)
+                    conversation = [{"role": "system", "content": system_prompt}]
+                    reprint(f"→ SYSTEM: System prompt changed")
+                    continue
                 case '/skills':
-                    input_list.append(handle_skills_command(working_directory))
+                    conversation.append(handle_skills_command(working_directory))
                     continue
                 case '/use_functions':
                     use_functions = handle_use_functions_command(user_query_split)
@@ -452,11 +520,11 @@ def main():
 
         with open(HISTORY_FILE, "a") as history_file:
             history_file.write(PROMPT_PREFIX + user_query + '\n\n')
-        input_list.append({"role": "user", "content": user_query})
+        conversation.append({"role": "user", "content": user_query})
 
         process_user_query(user_query, use_functions, allow_unsafe_fun,
                            verbose, working_directory, client, variables, 
-                           input_list)
+                           conversation)
 
 
 if __name__ == "__main__":
