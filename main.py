@@ -225,7 +225,7 @@ def handle_load_command(user_query_split: list):
 def json_serializable(obj):
     """Fallback to convert Pydantic/OpenAI objects to dicts."""
     if hasattr(obj, 'model_dump'):
-        return obj.model_dump()
+        return obj.model_dump(exclude_none=True)
     if hasattr(obj, '__dict__'):
         return obj.__dict__
     return str(obj)
