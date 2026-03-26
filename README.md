@@ -118,6 +118,7 @@ python3 ./main.py
 The agent supports the following commands (all starting with `/`):
 
 * `/allow_unsafe_fun [0,1]`: Turn the ability to run unsafe functions on (1) or off (0) (default: off).
+* `/analyze` : Analyze the current conversation and report some metrics.
 * `/exit`: Exit the program.
 * `/file <filename>`: Read the content of `<filename>` and treat it as a user query.
 * `/help`: Print a help message.

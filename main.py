@@ -6,6 +6,7 @@ from time import sleep
 import openai
 import json
 import readline
+import tiktoken
 
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter, Completer, Completion
@@ -23,6 +24,7 @@ PROMPT_PREFIX = "\u276f "
 
 HELP_MESSAGE = '''Available commands:
   /allow_unsafe_fun [0,1] : turn the ability to run unsafe functions on (1) or off (0) (default: OFF)
+  /analyze : analyze the current conversation and report some metrics
   /exit : leave the chat
   /file <filename> : load prompt from a file
   /help : print this help message
@@ -38,7 +40,7 @@ HELP_MESSAGE = '''Available commands:
 '''
 
 commands = [
-    '/allow_unsafe_fun', '/exit', '/file', '/help', '/load', '/multiline', '/reset_context', 
+    '/allow_unsafe_fun', '/analyze', '/exit', '/file', '/help', '/load', '/multiline', '/reset_context', 
     '/save', '/skills', '/system_prompt', '/use_functions', '/verbose', '/wd',
 ]
 
@@ -112,6 +114,20 @@ def initialize_client(variables: dict):
     except Exception as e:
         reprint(f"→ ERROR: Could not set-up the client: {e}")
         exit(1)
+
+def handle_analyze(conversation: list):
+    enc = tiktoken.get_encoding("o200k_base")
+    num_tokens = {'system': 0, 'user': 0, 'assistant': 0}
+    for item in conversation:
+        role = item['role']
+        if role in {'system', 'user'}:
+            num_tokens[role] += len(enc.encode(item['content']))
+        if role == 'assistant':
+            for line in item['content']:
+                num_tokens[role] += len(enc.encode(line['text']))
+    reprint("Estimated current token use:")
+    for role in num_tokens:
+        reprint(f"  {role}: {num_tokens[role]}")
 
 def handle_multiline(user_query_split: list):
     """
@@ -476,6 +492,9 @@ def main():
             match user_query_split[0]:
                 case '/allow_unsafe_fun':
                     allow_unsafe_fun = handle_allow_unsafe_fun(user_query_split)
+                    continue
+                case '/analyze':
+                    handle_analyze(conversation)
                     continue
                 case '/exit':
                     handle_exit()
