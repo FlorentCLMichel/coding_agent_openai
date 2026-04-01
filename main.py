@@ -435,7 +435,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
         
         final_response = response.output_text.strip()
         if final_response:
-            reprint('\n💻 ' + final_response + '\n\n')
+            reprint('\n💻 ' + final_response + '\n\n\a')
 
         wait_time_s = (wait_time_s + float(variables["time_between_queries_s"])) / 2.
 
