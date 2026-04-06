@@ -117,14 +117,15 @@ def initialize_client(variables: dict):
 
 def handle_analyze(conversation: list):
     enc = tiktoken.get_encoding("o200k_base")
-    num_tokens = {'system': 0, 'user': 0, 'assistant': 0}
+    num_tokens = {'system': 0, 'user': 0}
     for item in conversation:
-        role = item['role']
-        if role in {'system', 'user'}:
-            num_tokens[role] += len(enc.encode(item['content']))
-        if role == 'assistant':
-            for line in item['content']:
-                num_tokens[role] += len(enc.encode(line['text']))
+        role = item.get('role', 'unknown')
+        content = item['content']
+        if isinstance(content, list):
+            for line in content:
+                num_tokens[role] = num_tokens.get('role', 0) + len(enc.encode(line['text']))
+        else: 
+            num_tokens[role] = num_tokens.get('role', 0) + len(enc.encode(content))
     reprint("Estimated current token use:")
     for role in num_tokens:
         reprint(f"  {role}: {num_tokens[role]}")
