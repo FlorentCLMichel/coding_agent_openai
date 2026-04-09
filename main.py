@@ -119,6 +119,10 @@ def handle_analyze(conversation: list):
     enc = tiktoken.get_encoding("o200k_base")
     num_tokens = {'system': 0, 'user': 0}
     for item in conversation:
+        # Items may be dictionaries or Response objects depending on whether they come from a saved
+        # conversation or directly froma  model output. 
+        if not isinstance(item, dict): 
+            item = item.model_dump()
         role = item.get('role', 'unknown')
         content = item['content']
         if isinstance(content, list):
