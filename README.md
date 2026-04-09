@@ -72,8 +72,9 @@ The code requires the following environment variables:
 * `CC`: Command to use for compiling C code (default: `gcc`)
 * `CXX`: Command to use for compiling C code (default: `g++`)
 * `MODEL`: Name of the model to use
-* `TIME_BETWEEN_QUERIES_S`: Initial time between queries in seconds.
-* `TIME_INCREMENT_S`: Time increment when rate limit exceeded in seconds.
+* `TEMPERATURE`: Sampling temperature to use (between 0 and 2)
+* `TIME_BETWEEN_QUERIES_S`: Initial time between queries in seconds
+* `TIME_INCREMENT_S`: Time increment when rate limit exceeded in seconds
 
 You can either set these explicitly or store them in a `.env` file. Here's an example `.env` file (replace `<your-API-key>` with your actual key):
 

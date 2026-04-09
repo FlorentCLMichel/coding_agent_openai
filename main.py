@@ -120,7 +120,7 @@ def handle_analyze(conversation: list):
     num_tokens = {'system': 0, 'user': 0}
     for item in conversation:
         # Items may be dictionaries or Response objects depending on whether they come from a saved
-        # conversation or directly froma  model output. 
+        # conversation or directly from a model output. 
         if not isinstance(item, dict): 
             item = item.model_dump()
         role = item.get('role', 'unknown')
@@ -394,6 +394,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
                 model=variables["model"],
                 tools=tools,
                 input=conversation,
+                temperature=float(variables["temperature"]),
             )
 
             if response.output_text:
@@ -458,9 +459,10 @@ def main():
 
     load_dotenv()
     variables = {}
+    load_env_var("api_key", variables)
     load_env_var("model", variables)
     load_env_var("base_url", variables)
-    load_env_var("api_key", variables)
+    load_env_var("temperature", variables)
     load_env_var("time_between_queries_s", variables)
     load_env_var("time_increment_s", variables)
 
