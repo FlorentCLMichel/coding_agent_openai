@@ -129,6 +129,7 @@ The agent supports the following commands (all starting with `/`):
 * `/save <filename>` : Save the current conversation in a file.
 * `/skills` : Copy the skills to the working directory.
 * `/system_prompt <filename>`: Read the content of `<filename>` and use it as system prompt.
+* `/temperature <value>`: Change the model temperature.
 * `/use_functions [0,1]`: Turn the ability to use functions on (1) or off (0) (default: on).
 * `/verbose [0,1]`: Set verbose mode on (1) or off (0) (default: off).
 * `/wd <directory>`: Change the working directory.

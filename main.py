@@ -34,6 +34,7 @@ HELP_MESSAGE = '''Available commands:
   /save <filename> : save the current conversation in a file
   /skills : copy skill files to the working directory
   /system_prompt <filename> : load the system prompt from a file and reset the context
+  /temperature <value> : change the temperature of the model
   /use_functions [0,1] : turn the ability to use functions on (1) or off (0) (default: ON)
   /verbose [0,1] : turn verbose mode on (1) or off (0) (default: OFF)
   /wd <directory> : change the working directory
@@ -41,7 +42,7 @@ HELP_MESSAGE = '''Available commands:
 
 commands = [
     '/allow_unsafe_fun', '/analyze', '/exit', '/file', '/help', '/load', '/multiline', '/reset_context', 
-    '/save', '/skills', '/system_prompt', '/use_functions', '/verbose', '/wd',
+    '/save', '/skills', '/system_prompt', '/temperature', '/use_functions', '/verbose', '/wd',
 ]
 
 command_completer = WordCompleter(commands, sentence=True)
@@ -74,7 +75,7 @@ def read_file(file_name: str) -> str:
     with open(file_name, "r") as file:
         return file.read()
 
-def load_env_var(var: str, store: dict):
+def load_env_var(var: str, store: dict, fun = lambda x: x):
     """
     Load an environment variable into a dictionary and check if it is set.
     
@@ -86,7 +87,7 @@ def load_env_var(var: str, store: dict):
         SystemExit: If the environment variable is not set.
     """
     var_up = var.upper()
-    store[var] = environ.get(var_up)
+    store[var] = fun(environ.get(var_up))
     if not store[var]:
         reprint(f"→ ERROR: Environment variable " + var_up + " not set")
         exit(1)
@@ -289,6 +290,30 @@ def handle_skills_command(working_directory: str):
     with open("SKILLS.md") as file:
         return {"role": "system", "content": file.read()}
 
+def handle_temperature_command(user_query_split: list, old_temperature: float):
+    """
+    Handle the /temperature command to change the model temperature.
+    
+    Args:
+        user_query_split (list): A list of strings representing the user's query split by spaces.
+    
+    Returns:
+        float: The new temperature.
+    
+    Raises:
+        ValueError: If the argument is missing or invalid.
+    """
+    try:
+        if len(user_query_split) < 2:
+            raise ValueError("Missing argument for /temperature")
+        temperature = float(user_query_split[1])
+        if temperature < 0. or temperature > 2. :
+            raise ValueError(f"The temperature must be between 0 and 2; got {temperature}. Reverting to {old_temperature}.")
+        reprint(f"→ Model temperature {temperature}")
+        return temperature
+    except ValueError as e:
+        raise ValueError(f"Invalid input for /temperature: {e}")
+
 def handle_use_functions_command(user_query_split: list):
     """
     Handle the /use_functions command to toggle the ability to use functions.
@@ -394,7 +419,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
                 model=variables["model"],
                 tools=tools,
                 input=conversation,
-                temperature=float(variables["temperature"]),
+                temperature=variables["temperature"],
             )
 
             if response.output_text:
@@ -457,12 +482,12 @@ def main():
     use_functions = True
     multiline = False
 
-    load_dotenv()
     variables = {}
+    load_dotenv()
     load_env_var("api_key", variables)
     load_env_var("model", variables)
     load_env_var("base_url", variables)
-    load_env_var("temperature", variables)
+    load_env_var("temperature", variables, float)
     load_env_var("time_between_queries_s", variables)
     load_env_var("time_increment_s", variables)
 
@@ -523,13 +548,16 @@ def main():
                 case '/save':
                     handle_save_command(user_query_split, conversation)
                     continue
+                case '/skills':
+                    conversation.append(handle_skills_command(working_directory))
+                    continue
                 case '/system_prompt':
                     system_prompt = handle_file_command(user_query_split)
                     conversation = [{"role": "system", "content": system_prompt}]
                     reprint(f"→ SYSTEM: System prompt changed")
                     continue
-                case '/skills':
-                    conversation.append(handle_skills_command(working_directory))
+                case '/temperature':
+                    variables['temperature'] = handle_temperature_command(user_query_split, variables['temperature'])
                     continue
                 case '/use_functions':
                     use_functions = handle_use_functions_command(user_query_split)
