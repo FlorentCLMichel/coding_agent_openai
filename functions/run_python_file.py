@@ -3,13 +3,14 @@ from functions.utils import *
 import subprocess
 
 def run_python_file(working_directory, file_path, args="") -> str:
+    rel_file_path = file_path
     file_path = os.path.join(working_directory, file_path)
     if not path_is_parent(working_directory, file_path):
-        return f'ERROR: Cannot execute "{file_path}" as it is outside the permitted working directory {working_directory}'
+        return f'ERROR: Cannot execute "{rel_file_path}" as it is outside the permitted working directory'
     if not os.path.exists(file_path):
-        f'ERROR: File "{file_path}" not found.'
+        f'ERROR: File "{rel_file_path}" not found.'
     if not file_path.endswith('.py'):
-        return f'ERROR: "{file_path}" is not a Python file.'
+        return f'ERROR: "{rel_file_path}" is not a Python file.'
     try:
         commands = ["python", file_path]
         if args:

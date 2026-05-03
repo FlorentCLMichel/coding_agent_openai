@@ -18,11 +18,12 @@ def new_rust_project(working_directory, name, dir_path='.', args='') -> str :
 
 def build_rust_project(working_directory, name, dir_path='.', args='') -> str :
     project_path = dir_path + '/' + name
+    rel_project_path = project_path
     project_path = os.path.join(working_directory, project_path)
     if not(path_is_parent(working_directory, project_path)):
-        return f'ERROR: Cannot write "{project_path}" as it is outside the permitted working directory {working_directory}'
+        return f'ERROR: Cannot write "{rel_project_path}" as it is outside the permitted working directory'
     if not(os.path.isdir(project_path)):
-        return f'ERROR: "{project_path}" is not a directory'
+        return f'ERROR: "{rel_project_path}" is not a directory'
     try:
         log_file_path = dir_path + "/log.txt"
         with open(working_directory + '/' + log_file_path, 'w') as f:
@@ -34,11 +35,12 @@ def build_rust_project(working_directory, name, dir_path='.', args='') -> str :
 
 def run_rust_project(working_directory, name, dir_path='.', args='') -> str :
     project_path = dir_path + '/' + name
+    rel_project_path = project_path
     project_path = os.path.join(working_directory, project_path)
     if not(path_is_parent(working_directory, project_path)):
-        return f'ERROR: Cannot write "{project_path}" as it is outside the permitted working directory {working_directory}'
+        return f'ERROR: Cannot write "{rel_project_path}" as it is outside the permitted working directory'
     if not(os.path.isdir(project_path)):
-        return f'ERROR: "{project_path}" is not a directory'
+        return f'ERROR: "{rel_project_path}" is not a directory'
     try:
         log_file_path = dir_path + "/log.txt"
         with open(working_directory + '/' + log_file_path, 'w') as f:
@@ -50,11 +52,12 @@ def run_rust_project(working_directory, name, dir_path='.', args='') -> str :
 
 def run_clippy(working_directory, name, dir_path='.', args='') -> str :
     project_path = dir_path + '/' + name
+    rel_project_path = project_path
     project_path = os.path.join(working_directory, project_path)
     if not(path_is_parent(working_directory, project_path)):
-        return f'ERROR: Cannot write "{project_path}" as it is outside the permitted working directory {working_directory}'
+        return f'ERROR: Cannot write "{rel_project_path}" as it is outside the permitted working directory'
     if not(os.path.isdir(project_path)):
-        return f'ERROR: "{project_path}" is not a directory'
+        return f'ERROR: "{rel_project_path}" is not a directory'
     try:
         log_file_path = dir_path + "/log.txt"
         with open(working_directory + '/' + log_file_path, 'w') as f:
