@@ -2,16 +2,17 @@ from datetime import datetime
 import json
 import logging
 
+from functions.compile_c import *
+from functions.create_dir import *
+from functions.fetch_url import *
 from functions.get_files_info import *
 from functions.get_file_content import *
-from functions.create_dir import *
-from functions.write_file import *
 from functions.move_file import *
 from functions.run_sh_command import *
 from functions.run_python_file import *
-from functions.compile_c import *
 from functions.rust import *
 from functions.utils import reprint
+from functions.write_file import *
 
 safer_functions = {
     "get_files_info": get_files_info,
@@ -27,6 +28,7 @@ safer_functions = {
 }
 
 unsafe_functions = {
+    "fetch_url": fetch_url,
     "run_sh_command": run_sh_command,
     "run_python_file": run_python_file,
     "run_rust_project": run_rust_project,

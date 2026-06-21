@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from os import environ, path
 from time import sleep
+from sys import stdin, stdout, stderr
 
 import openai
 import json
@@ -21,6 +22,7 @@ from functions.tools import safer_tools, unsafe_tools
 from functions.utils import HISTORY_FILE, reprint
 
 PROMPT_PREFIX = "\u276f "
+END_OF_PROMPT = "END-OF-PROMPT"
 
 HELP_MESSAGE = '''Available commands:
   /allow_unsafe_fun [0,1] : turn the ability to run unsafe functions on (1) or off (0) (default: OFF)
@@ -398,9 +400,6 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
         variables (dict): A dictionary containing configuration variables.
         conversation (list): A list of input messages for the conversation.
     
-    Returns:
-        str: The generated response text.
-    
     Raises:
         SystemExit: If an error occurs during the processing of the query.
     """
@@ -501,21 +500,29 @@ def main():
 
     while True:
         try:
-            # Use prompt_toolkit for user input
-            user_query = prompt(
-                PROMPT_PREFIX,
-                completer=CustomCompleter(command_completer),
-                history=history,
-                auto_suggest=AutoSuggestFromHistory(),
-                style=custom_style,
-                complete_while_typing=True,
-                multiline=multiline
-            ).strip()
+            if stdin.isatty():
+                user_query = prompt(
+                    PROMPT_PREFIX,
+                    completer=CustomCompleter(command_completer),
+                    history=history,
+                    auto_suggest=AutoSuggestFromHistory(),
+                    style=custom_style,
+                    complete_while_typing=True,
+                    multiline=multiline
+                ).strip()
+            else: 
+                stdout.write(PROMPT_PREFIX + '\n')
+                stdout.flush()
+                line = stdin.readline().strip()
+                user_query = line
+                while line != END_OF_PROMPT:
+                    line = stdin.readline().strip()
+                    user_query += '\n' + line
         except KeyboardInterrupt:
             continue  # Handle Ctrl+C gracefully
         except EOFError:
             break  # Handle Ctrl+D gracefully
-
+        
         user_query_split = user_query.split()
         if not user_query_split:
             continue

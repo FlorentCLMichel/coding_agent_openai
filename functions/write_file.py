@@ -1,7 +1,7 @@
 from functions.utils import *
 
 def write_file(working_directory, file_path, content) -> str :
-    arel_file_path = file_path
+    rel_file_path = file_path
     file_path = os.path.join(working_directory, file_path)
     if not(path_is_parent(working_directory, file_path)):
         return f'ERROR: Cannot write "{rel_file_path}" as it is outside the permitted working directory'

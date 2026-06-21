@@ -202,6 +202,21 @@ safer_tools = [
 unsafe_tools = [
     {
         "type": "function",
+        "name": "fetch_url",
+        "description": "Makes an HTTP GET request to the specified URL and returns the content and status code.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "description": "The full URL to fetch content from",
+                },
+            },
+            "required": ["url"],
+        },
+    },
+    {
+        "type": "function",
         "name": "run_sh_command",
         "description": "Run a shell command from the working directory.",
         "parameters": {
