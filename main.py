@@ -1,3 +1,5 @@
+#! python3
+
 from dotenv import load_dotenv
 from openai import OpenAI
 from os import environ, path
