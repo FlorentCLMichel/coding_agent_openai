@@ -12,7 +12,8 @@ import readline
 import tiktoken
 
 from prompt_toolkit import prompt
-from prompt_toolkit.completion import WordCompleter, Completer, Completion
+from prompt_toolkit.document import Document
+from prompt_toolkit.completion import WordCompleter, PathCompleter, Completer, Completion
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.styles import Style
@@ -54,12 +55,20 @@ command_completer = WordCompleter(commands, sentence=True)
 class CustomCompleter(Completer):
     def __init__(self, word_completer):
         self.word_completer = word_completer
+        self.path_completer = PathCompleter()
 
     def get_completions(self, document, complete_event):
-        if document.text.startswith('/') and not (' ' in document.text):
-            all_completions = list(self.word_completer.get_completions(document, complete_event))
-            for completion in all_completions:
-                yield completion
+        if document.text.startswith('/'):
+            document_split = document.text.split()
+            if len(document_split) > 1 :
+                subdoc = Document(document.text[len(document_split[0])+1:])
+                all_completions = list(self.path_completer.get_completions(subdoc, complete_event))
+                for completion in all_completions:
+                    yield completion
+            else:
+                all_completions = list(self.word_completer.get_completions(document, complete_event))
+                for completion in all_completions:
+                    yield completion
 
 custom_style = Style.from_dict({
     'prompt': '#ffffff',

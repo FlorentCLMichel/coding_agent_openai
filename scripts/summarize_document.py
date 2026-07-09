@@ -33,14 +33,22 @@ def parse_arguments():
         default=1000, 
         help="Maximum number of words in the intermediate summary before triggering a compression step (default: 1000)."
     )
+    parser.add_argument(
+        "--overlap", 
+        type=int, 
+        default=100, 
+        help="Number of words of overlap between chunks (default: 100)."
+    )
     return parser.parse_args()
 
-def split_document(text, max_words):
+def split_document(text, max_words, overlap = 0):
     """Splits text into chunks of at most max_words."""
     words = text.split()
     chunks = []
     for i in range(0, len(words), max_words):
-        chunk_words = words[i:i + max_words]
+        begin = i if i == 0 else i - overlap
+        end = i + max_words
+        chunk_words = words[begin:end]
         chunks.append(" ".join(chunk_words))
     return chunks
 
@@ -77,7 +85,7 @@ def main():
     with open(args.doc_path, "r", encoding="utf-8") as f:
         document_text = f.read()
         
-    chunks = split_document(document_text, args.max_doc_len)
+    chunks = split_document(document_text, args.max_doc_len, args.overlap)
     print(f"Split document into {len(chunks)} chunks.")
 
     # Start the agent process 
@@ -152,6 +160,9 @@ def main():
         print("\n================ FINAL SUMMARY ================")
         print(summary)
         print("===============================================")
+    
+        with open(args.doc_path + "_summary", "w", encoding="utf-8") as f:
+            f.write(summary)
         
     finally:
         # Cleanly close the process
