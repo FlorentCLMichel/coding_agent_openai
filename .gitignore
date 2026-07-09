@@ -1,4 +1,6 @@
 .chat.history
 .env
 __pycache__
+alt_sys_prompts
+convs
 functions/__pycache__
