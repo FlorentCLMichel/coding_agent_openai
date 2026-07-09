@@ -25,6 +25,7 @@ from functions.tools import safer_tools, unsafe_tools
 from functions.utils import HISTORY_FILE, reprint
 
 PROMPT_PREFIX = "\u276f "
+AI_PROMPT_PREFIX = "💻 "
 END_OF_PROMPT = "END-OF-PROMPT"
 
 HELP_MESSAGE = '''Available commands:
@@ -249,6 +250,9 @@ def handle_load_command(user_query_split: list):
         with open(fname, "r", encoding="utf-8") as f:
             conversation = json.load(f)
             reprint(f"SYSTEM: File {fname} loaded successfully.")
+            for content in conversation[-1]['content']:
+                if 'text' in content:
+                    reprint(f"\n{AI_PROMPT_PREFIX}{content['text']}")
             return conversation
     except FileNotFoundError:
         raise Exception(f"File not found: {fname}")
@@ -476,7 +480,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
         
         final_response = response.output_text.strip()
         if final_response:
-            reprint('\n💻 ' + final_response + '\n\n\a')
+            reprint('\n' + AI_PROMPT_PREFIX + final_response + '\n\n\a')
 
         wait_time_s = (wait_time_s + float(variables["time_between_queries_s"])) / 2.
 
