@@ -7,4 +7,5 @@ clean:
 	rm -f .function_calls.log
 	rm -f .prompt_history
 	rm -f log.txt
-	rm -rf test/*
+	rm -rf test
+	mkdir test

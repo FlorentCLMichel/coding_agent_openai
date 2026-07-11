@@ -9,7 +9,6 @@ import time
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
-
 from main import END_OF_PROMPT, PROMPT_PREFIX
 
 def parse_arguments():
@@ -163,6 +162,9 @@ def main():
     
         with open(args.doc_path + "_summary", "w", encoding="utf-8") as f:
             f.write(summary)
+
+    except Exception as e: 
+        print(e)
         
     finally:
         # Cleanly close the process

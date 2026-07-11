@@ -123,6 +123,7 @@ The agent supports the following commands (all starting with `/`):
 * `/exit`: Exit the program.
 * `/file <filename>`: Read the content of `<filename>` and treat it as a user query.
 * `/help`: Print a help message.
+* `/hide_html_comments [0,1]`: if 1, hides HTML comments from the terminal output.
 * `/load <filename>` : Load a conversation from a file.
 * `/multiline [0,1]`: Turn multiline prompts on (1) or off (0) (default: off). If multiline prompts are on, you can send the prompt with `escape` followed by `enter`.
 * `/reset_context` : Reset the context.

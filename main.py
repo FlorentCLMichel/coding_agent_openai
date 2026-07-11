@@ -34,6 +34,7 @@ HELP_MESSAGE = '''Available commands:
   /exit : leave the chat
   /file <filename> : load prompt from a file
   /help : print this help message
+  /hide_html_comments [0,1] : if 1, hides HTML comments from the terminal output
   /load <filename> : load a conversation from a file
   /multiline [0,1] : turn multiline prompts on (1) off (0) (default: OFF)
   /reset_context : reset the context
@@ -47,8 +48,9 @@ HELP_MESSAGE = '''Available commands:
 '''
 
 commands = [
-    '/allow_unsafe_fun', '/analyze', '/exit', '/file', '/help', '/load', '/multiline', '/reset_context', 
-    '/save', '/skills', '/system_prompt', '/temperature', '/use_functions', '/verbose', '/wd',
+    '/allow_unsafe_fun', '/analyze', '/exit', '/file', '/help', '/hide_html_comments', '/load', 
+    '/multiline', '/reset_context', '/save', '/skills', '/system_prompt', '/temperature', 
+    '/use_functions', '/verbose', '/wd',
 ]
 
 command_completer = WordCompleter(commands, sentence=True)
@@ -205,6 +207,28 @@ def handle_help():
     """
     reprint(HELP_MESSAGE)
 
+def handle_hide_html_comments(user_query_split: list):
+    """
+    Handle the /hide_html_comments command to turn hiding of HTML comments on or off.
+    
+    Args:
+        user_query_split (list): A list of strings representing the user's query split by spaces.
+    
+    Returns:
+        bool: The new state of the hide_html_comments flag.
+    
+    Raises:
+        Exception: If the argument is missing or invalid.
+    """
+    try:
+        if len(user_query_split) < 2:
+            raise ValueError("Missing argument for /hide_html_comments")
+        hide_html_comments = bool(int(user_query_split[1]))
+        reprint(f"→ Hiding of HTML comments {hide_html_comments}")
+        return hide_html_comments
+    except ValueError as e:
+        raise Exception(f"→ ERROR: Invalid input for /hide_html_comments: {e}")
+
 def handle_file_command(user_query_split: list) -> str:
     """
     Handle the /file command to read a file and return its content.
@@ -230,12 +254,13 @@ def handle_file_command(user_query_split: list) -> str:
     except Exception as e:
         raise Exception(f"Unexpected error while reading file: {e}")
 
-def handle_load_command(user_query_split: list):
+def handle_load_command(user_query_split: list, hide_html_comments: bool):
     """
     Handle the /load command to load a conversation from a file.
     
     Args:
         user_query_split (list): A list of strings representing the user's query split by spaces.
+        hide_html_comments (bool): Whether to hide HTML comments.
     
     Returns:
         List: The loaded conversation.
@@ -252,7 +277,7 @@ def handle_load_command(user_query_split: list):
             reprint(f"SYSTEM: File {fname} loaded successfully.")
             for content in conversation[-1]['content']:
                 if 'text' in content:
-                    reprint(f"\n{AI_PROMPT_PREFIX}{content['text']}")
+                    reprint(f"\n{AI_PROMPT_PREFIX}{content['text']}\n", hide_html_comments)
             return conversation
     except FileNotFoundError:
         raise Exception(f"File not found: {fname}")
@@ -285,7 +310,7 @@ def handle_save_command(user_query_split: list, conversation: list):
         fname = user_query_split[1]
         with open(fname, "w", encoding="utf-8") as file:
             json.dump(conversation, file, indent=4, default=json_serializable)
-            reprint(f"SYSTEM: Conversation saved to {fname}")
+            reprint(f"→ Conversation saved to {fname}")
     except FileNotFoundError:
         raise Exception(f"File not found: {fname}")
     except PermissionError:
@@ -400,8 +425,8 @@ def handle_wd_command(user_query_split: list):
         raise Exception(f"→ ERROR: Could not change working directory: {e}")
 
 def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: bool,
-                       verbose: bool, working_directory: str, client, variables: dict, 
-                       conversation: list):
+                       verbose: bool, hide_html_comments: bool, working_directory: str,
+                       client, variables: dict, conversation: list):
     """
     Process the user's query and generate a response using the OpenAI client.
     
@@ -411,6 +436,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
         allow_unsafe_fun (bool): Whether to allow the use of unsafe functions.
         verbose (bool): Whether to enable verbose mode.
         working_directory (str): The current working directory.
+        hide_html_comments (bool): Whether to hide HTML comments.
         client: The OpenAI client used to generate the response.
         variables (dict): A dictionary containing configuration variables.
         conversation (list): A list of input messages for the conversation.
@@ -444,7 +470,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
         except openai.RateLimitError as e:
             reprint(f"→ ERROR: {e}")
             wait_time_s = 2*wait_time_s + float(variables["time_increment_s"])
-            reprint(f"→ SYSTEM: Increasing wait time to {wait_time_s}s")
+            reprint(f"→ Increasing wait time to {wait_time_s}s")
             continue
 
         except Exception as e:
@@ -473,16 +499,22 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
                     })
                 })
                 continue
-            if item.type != 'message' and item.content:
-                if verbose:
-                    reprint(f'→ Response type `{item.type}`: {"\n".join(filter(None, map(lambda x: x.text.strip(), item.content)))}')
-                continue
+            if item.type != 'message':
+                if item.content:
+                    if verbose:
+                        reprint(f'→ Response type `{item.type}`: {"\n".join(filter(None, map(lambda x: x.text.strip(), item.content)))}')
+                    continue
+                if item.summary:
+                    if verbose:
+                        reprint(f'→ Response type `{item.type}`: {"\n".join(filter(None, map(lambda x: x.text.strip(), item.summary)))}')
+                    continue
         
         final_response = response.output_text.strip()
         if final_response:
-            reprint('\n' + AI_PROMPT_PREFIX + final_response + '\n\n\a')
+            reprint('\n' + AI_PROMPT_PREFIX + final_response + '\n\n\a', hide_html_comments)
 
         wait_time_s = (wait_time_s + float(variables["time_between_queries_s"])) / 2.
+
 
 def main():
     """
@@ -492,6 +524,7 @@ def main():
     """
     working_directory = "test"
     verbose = False
+    hide_html_comments = False
     allow_unsafe_fun = False
     use_functions = True
     multiline = False
@@ -555,10 +588,13 @@ def main():
                 case '/help':
                     handle_help()
                     continue
+                case '/hide_html_comments':
+                    hide_html_comments = handle_hide_html_comments(user_query_split)
+                    continue
                 case '/file':
                     user_query = handle_file_command(user_query_split)
                 case '/load':
-                    conversation = handle_load_command(user_query_split)
+                    conversation = handle_load_command(user_query_split, hide_html_comments)
                     continue
                 case '/multiline':
                     multiline = handle_multiline(user_query_split)
@@ -599,8 +635,8 @@ def main():
         conversation.append({"role": "user", "content": user_query})
 
         process_user_query(user_query, use_functions, allow_unsafe_fun,
-                           verbose, working_directory, client, variables, 
-                           conversation)
+                           verbose, hide_html_comments, working_directory, 
+                           client, variables, conversation)
 
 
 if __name__ == "__main__":
