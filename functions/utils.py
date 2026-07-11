@@ -4,10 +4,10 @@ import re
 HISTORY_FILE = ".chat.history"
 
 def reprint(message: str, hide_html_comments: bool = False):
-    with open(HISTORY_FILE, "a") as history_file:
-        history_file.write(message + '\n')
     if hide_html_comments:
         message = re.sub(r'<!--.*--> *\n*', '', message)
+    with open(HISTORY_FILE, "a") as history_file:
+        history_file.write(message + '\n')
     print(message)
 
 def path_is_parent(parent_path: str, child_path: str) -> bool :
