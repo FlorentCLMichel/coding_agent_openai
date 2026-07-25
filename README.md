@@ -71,7 +71,9 @@ The code requires the following environment variables:
 * `BASE_URL`: The URL where the model can be found
 * `CC`: Command to use for compiling C code (default: `gcc`)
 * `CXX`: Command to use for compiling C code (default: `g++`)
+* `FREQUENCY_PENALTY`: Frequency penalty to use (between -2 and 2)
 * `MODEL`: Name of the model to use
+* `PRESENCE_PENALTY`: Presence penalty to use (between -2 and 2)
 * `TEMPERATURE`: Sampling temperature to use (between 0 and 2)
 * `TIME_BETWEEN_QUERIES_S`: Initial time between queries in seconds
 * `TIME_INCREMENT_S`: Time increment when rate limit exceeded in seconds
@@ -111,7 +113,7 @@ TIME_INCREMENT_S=10
 
 Run the agent using:
 ```bash
-python3 ./main.py
+python3 ./main.py [initial_commands_file] [env_file]
 ```
 
 ### Commands
@@ -124,10 +126,10 @@ The agent supports the following commands (all starting with `/`):
 * `/file <filename>`: Read the content of `<filename>` and treat it as a user query.
 * `/help`: Print a help message.
 * `/hide_html_comments [0,1]`: if 1, hides HTML comments from the terminal output.
-* `/load <filename>` : Load a conversation from a file.
+* `/load <filename>` : Load a conversation from a file. The second argument specifies if the file is encrypted (1) or not (0) (default: 0).
 * `/multiline [0,1]`: Turn multiline prompts on (1) or off (0) (default: off). If multiline prompts are on, you can send the prompt with `escape` followed by `enter`.
 * `/reset_context` : Reset the context.
-* `/save <filename>` : Save the current conversation in a file.
+* `/save <filename> [0,1]` : Save the current conversation in a file. The second argument specifies if the file should be encrypted (1) or not (0) (default: 0).
 * `/skills` : Copy the skills to the working directory.
 * `/system_prompt <filename>`: Read the content of `<filename>` and use it as system prompt.
 * `/temperature <value>`: Change the model temperature.

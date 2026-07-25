@@ -1,10 +1,14 @@
-#! python3
-
+#! python
+import base64
+from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from dotenv import load_dotenv
+from getpass import getpass
 from openai import OpenAI
 from os import environ, path
 from time import sleep
-from sys import stdin, stdout, stderr
+from sys import argv, stdin, stdout, stderr
 
 import openai
 import json
@@ -35,10 +39,10 @@ HELP_MESSAGE = '''Available commands:
   /file <filename> : load prompt from a file
   /help : print this help message
   /hide_html_comments [0,1] : if 1, hides HTML comments from the terminal output
-  /load <filename> : load a conversation from a file
+  /load <filename> [0,1] : load a conversation from a file, and decrypt it if the second argument is 1
   /multiline [0,1] : turn multiline prompts on (1) off (0) (default: OFF)
   /reset_context : reset the context
-  /save <filename> : save the current conversation in a file
+  /save <filename> [0,1] : save the current conversation in a file, optionally encrypting it
   /skills : copy skill files to the working directory
   /system_prompt <filename> : load the system prompt from a file and reset the context
   /temperature <value> : change the temperature of the model
@@ -48,9 +52,9 @@ HELP_MESSAGE = '''Available commands:
 '''
 
 commands = [
-    '/allow_unsafe_fun', '/analyze', '/exit', '/file', '/help', '/hide_html_comments', '/load', 
-    '/multiline', '/reset_context', '/save', '/skills', '/system_prompt', '/temperature', 
-    '/use_functions', '/verbose', '/wd',
+    '/allow_unsafe_fun', '/analyze', '/exit', '/file', '/help', 
+    '/hide_html_comments', '/load', '/multiline', '/reset_context', '/save', 
+    '/skills', '/system_prompt', '/temperature', '/use_functions', '/verbose', '/wd',
 ]
 
 command_completer = WordCompleter(commands, sentence=True)
@@ -103,10 +107,11 @@ def load_env_var(var: str, store: dict, fun = lambda x: x):
         SystemExit: If the environment variable is not set.
     """
     var_up = var.upper()
-    store[var] = fun(environ.get(var_up))
-    if not store[var]:
+    env_var = environ.get(var_up)
+    if env_var is None:
         reprint(f"→ ERROR: Environment variable " + var_up + " not set")
         exit(1)
+    store[var] = fun(env_var)
 
 def initialize_client(variables: dict):
     """
@@ -254,7 +259,20 @@ def handle_file_command(user_query_split: list) -> str:
     except Exception as e:
         raise Exception(f"Unexpected error while reading file: {e}")
 
-def handle_load_command(user_query_split: list, hide_html_comments: bool):
+def generate_key():
+    """Note: THis shouldonly be used for local storage.
+    """
+    password = getpass()
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=bytes("0"*16, encoding="utf-8"),
+        iterations=390000,
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(bytes(password, encoding="utf-8")))
+    return Fernet(key)
+
+def handle_load_command(user_query_split: list, hide_html_comments: bool, encrypt: bool = None):
     """
     Handle the /load command to load a conversation from a file.
     
@@ -268,13 +286,21 @@ def handle_load_command(user_query_split: list, hide_html_comments: bool):
     Raises:
         Exception: If the file is not found, permission is denied, or an unexpected error occurs.
     """
+    global key;
     try:
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for (file name)")
+        if len(user_query_split) > 2:
+            encrypt = bool(user_query_split[2])
         fname = user_query_split[1]
         with open(fname, "r", encoding="utf-8") as f:
-            conversation = json.load(f)
-            reprint(f"SYSTEM: File {fname} loaded successfully.")
+            conversation = f.read()
+            if encrypt:
+                if (key is None):
+                    key = generate_key()
+                conversation = key.decrypt(conversation).decode()
+            conversation = json.loads(conversation)
+            reprint(f"→ File {fname} loaded successfully.")
             for content in conversation[-1]['content']:
                 if 'text' in content:
                     reprint(f"\n{AI_PROMPT_PREFIX}{content['text']}\n", hide_html_comments)
@@ -294,7 +320,7 @@ def json_serializable(obj):
         return obj.__dict__
     return str(obj)
 
-def handle_save_command(user_query_split: list, conversation: list):
+def handle_save_command(user_query_split: list, conversation: list, encrypt: bool = None):
     """
     Handle the /save command to save the conversation into a file.
     
@@ -304,12 +330,20 @@ def handle_save_command(user_query_split: list, conversation: list):
     Raises:
         Exception: If the file is not found, permission is denied, or an unexpected error occurs.
     """
+    global key;
     try:
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for (file name)")
+        if len(user_query_split) > 2:
+            encrypt = bool(user_query_split[2])
         fname = user_query_split[1]
+        conversation = json.dumps(conversation, indent=4, default=json_serializable)
+        if encrypt:
+            if (key is None):
+                key = generate_key()
+            conversation = key.encrypt(conversation.encode()).decode()
         with open(fname, "w", encoding="utf-8") as file:
-            json.dump(conversation, file, indent=4, default=json_serializable)
+            file.write(conversation)
             reprint(f"→ Conversation saved to {fname}")
     except FileNotFoundError:
         raise Exception(f"File not found: {fname}")
@@ -516,21 +550,27 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
         wait_time_s = (wait_time_s + float(variables["time_between_queries_s"])) / 2.
 
 
-def main():
+def main(env_file=None, initial_commands=[]):
     """
     Main function to run the prototype coding agent.
     
     This function initializes the environment, sets up the OpenAI client, and starts the interactive chat loop.
     """
+    global key
+    
     working_directory = "test"
     verbose = False
     hide_html_comments = False
     allow_unsafe_fun = False
     use_functions = True
     multiline = False
+    key = None
 
     variables = {}
-    load_dotenv()
+    if env_file:
+        load_dotenv(env_file)
+    else:
+        load_dotenv()
     load_env_var("api_key", variables)
     load_env_var("model", variables)
     load_env_var("base_url", variables)
@@ -548,24 +588,27 @@ def main():
 
     while True:
         try:
-            if stdin.isatty():
-                user_query = prompt(
-                    PROMPT_PREFIX,
-                    completer=CustomCompleter(command_completer),
-                    history=history,
-                    auto_suggest=AutoSuggestFromHistory(),
-                    style=custom_style,
-                    complete_while_typing=True,
-                    multiline=multiline
-                ).strip()
-            else: 
-                stdout.write(PROMPT_PREFIX + '\n')
-                stdout.flush()
-                line = stdin.readline().strip()
-                user_query = line
-                while line != END_OF_PROMPT:
+            if (initial_commands):
+                user_query = initial_commands.pop()
+            else:
+                if stdin.isatty():
+                    user_query = prompt(
+                        PROMPT_PREFIX,
+                        completer=CustomCompleter(command_completer),
+                        history=history,
+                        auto_suggest=AutoSuggestFromHistory(),
+                        style=custom_style,
+                        complete_while_typing=True,
+                        multiline=multiline
+                    ).strip()
+                else: 
+                    stdout.write(PROMPT_PREFIX + '\n')
+                    stdout.flush()
                     line = stdin.readline().strip()
-                    user_query += '\n' + line
+                    user_query = line
+                    while line != END_OF_PROMPT:
+                        line = stdin.readline().strip()
+                        user_query += '\n' + line
         except KeyboardInterrupt:
             continue  # Handle Ctrl+C gracefully
         except EOFError:
@@ -601,7 +644,7 @@ def main():
                     continue
                 case '/reset_context':
                     conversation = [{"role": "system", "content": system_prompt}]
-                    reprint(f"→ SYSTEM: Context resetted")
+                    reprint(f"→ Context resetted")
                     continue
                 case '/save':
                     handle_save_command(user_query_split, conversation)
@@ -612,7 +655,7 @@ def main():
                 case '/system_prompt':
                     system_prompt = handle_file_command(user_query_split)
                     conversation = [{"role": "system", "content": system_prompt}]
-                    reprint(f"→ SYSTEM: System prompt changed")
+                    reprint(f"→ System prompt changed")
                     continue
                 case '/temperature':
                     variables['temperature'] = handle_temperature_command(user_query_split, variables['temperature'])
@@ -640,4 +683,13 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if len(argv) > 1:
+        with open(argv[1], "r") as file:
+            initial_commands = file.readlines()[::-1]
+    else:
+        initial_commands = []
+    if len(argv) > 2:
+        env_file = argv[2]
+    else:
+        env_file = None
+    main(env_file, initial_commands)
