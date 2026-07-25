@@ -272,7 +272,7 @@ def generate_key():
     key = base64.urlsafe_b64encode(kdf.derive(bytes(password, encoding="utf-8")))
     return Fernet(key)
 
-def handle_load_command(user_query_split: list, hide_html_comments: bool, encrypt: bool = None):
+def handle_load_command(user_query_split: list, hide_html_comments: bool):
     """
     Handle the /load command to load a conversation from a file.
     
@@ -286,12 +286,14 @@ def handle_load_command(user_query_split: list, hide_html_comments: bool, encryp
     Raises:
         Exception: If the file is not found, permission is denied, or an unexpected error occurs.
     """
+    global encrypt;
     global key;
     try:
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for (file name)")
         if len(user_query_split) > 2:
             encrypt = bool(user_query_split[2])
+            reprint(f"→ Encryption set to {encrypt}")
         fname = user_query_split[1]
         with open(fname, "r", encoding="utf-8") as f:
             conversation = f.read()
@@ -320,7 +322,7 @@ def json_serializable(obj):
         return obj.__dict__
     return str(obj)
 
-def handle_save_command(user_query_split: list, conversation: list, encrypt: bool = None):
+def handle_save_command(user_query_split: list, conversation: list):
     """
     Handle the /save command to save the conversation into a file.
     
@@ -330,12 +332,14 @@ def handle_save_command(user_query_split: list, conversation: list, encrypt: boo
     Raises:
         Exception: If the file is not found, permission is denied, or an unexpected error occurs.
     """
+    global encrypt;
     global key;
     try:
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for (file name)")
         if len(user_query_split) > 2:
             encrypt = bool(user_query_split[2])
+            reprint(f"→ Encryption set to {encrypt}")
         fname = user_query_split[1]
         conversation = json.dumps(conversation, indent=4, default=json_serializable)
         if encrypt:
@@ -556,6 +560,7 @@ def main(env_file=None, initial_commands=[]):
     
     This function initializes the environment, sets up the OpenAI client, and starts the interactive chat loop.
     """
+    global encrypt
     global key
     
     working_directory = "test"
@@ -564,6 +569,7 @@ def main(env_file=None, initial_commands=[]):
     allow_unsafe_fun = False
     use_functions = True
     multiline = False
+    encrypt = False
     key = None
 
     variables = {}
