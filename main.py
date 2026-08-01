@@ -28,9 +28,10 @@ from functions.interface import call_function
 from functions.tools import safer_tools, unsafe_tools
 from functions.utils import HISTORY_FILE, reprint
 
-PROMPT_PREFIX = "\u276f "
 AI_PROMPT_PREFIX = "💻 "
+CONV_HEADER = "0" * 100
 END_OF_PROMPT = "END-OF-PROMPT"
+PROMPT_PREFIX = "\u276f "
 
 HELP_MESSAGE = '''Available commands:
   /allow_unsafe_fun [0,1] : turn the ability to run unsafe functions on (1) or off (0) (default: OFF)
@@ -292,15 +293,24 @@ def handle_load_command(user_query_split: list, hide_html_comments: bool):
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for (file name)")
         if len(user_query_split) > 2:
-            encrypt = bool(user_query_split[2])
+            encrypt = bool(int(user_query_split[2]))
             reprint(f"→ Encryption set to {encrypt}")
         fname = user_query_split[1]
         with open(fname, "r", encoding="utf-8") as f:
             conversation = f.read()
             if encrypt:
-                if (key is None):
-                    key = generate_key()
-                conversation = key.decrypt(conversation).decode()
+                while True:
+                    if (key is None):
+                        key = generate_key()
+                    try:
+                        conversation = key.decrypt(conversation).decode()
+                        if conversation[:len(CONV_HEADER)] != CONV_HEADER :
+                            raise "Invalid header"
+                        conversation = conversation[len(CONV_HEADER):]
+                        break
+                    except:
+                        print("→ Unable to load the conversation; the password may be incorrect")
+                        key = None
             conversation = json.loads(conversation)
             reprint(f"→ File {fname} loaded successfully.")
             for content in conversation[-1]['content']:
@@ -338,10 +348,10 @@ def handle_save_command(user_query_split: list, conversation: list):
         if len(user_query_split) < 2:
             raise ValueError("Missing argument for (file name)")
         if len(user_query_split) > 2:
-            encrypt = bool(user_query_split[2])
+            encrypt = bool(int(user_query_split[2]))
             reprint(f"→ Encryption set to {encrypt}")
         fname = user_query_split[1]
-        conversation = json.dumps(conversation, indent=4, default=json_serializable)
+        conversation = CONV_HEADER + json.dumps(conversation, indent=4, default=json_serializable)
         if encrypt:
             if (key is None):
                 key = generate_key()
