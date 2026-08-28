@@ -42,6 +42,7 @@ HELP_MESSAGE = '''Available commands:
   /hide_html_comments [0,1] : if 1, hides HTML comments from the terminal output
   /load <filename> [0,1] : load a conversation from a file, and decrypt it if the second argument is 1
   /multiline [0,1] : turn multiline prompts on (1) off (0) (default: OFF)
+  /reasoning <value> : change the reasoning effort
   /reset_context : reset the context
   /save <filename> [0,1] : save the current conversation in a file, optionally encrypting it
   /skills : copy skill files to the working directory
@@ -54,7 +55,7 @@ HELP_MESSAGE = '''Available commands:
 
 commands = [
     '/allow_unsafe_fun', '/analyze', '/exit', '/file', '/help', 
-    '/hide_html_comments', '/load', '/multiline', '/reset_context', '/save', 
+    '/hide_html_comments', '/load', '/multiline', '/reasoning', '/reset_context', '/save', 
     '/skills', '/system_prompt', '/temperature', '/use_functions', '/verbose', '/wd',
 ]
 
@@ -263,7 +264,10 @@ def handle_file_command(user_query_split: list) -> str:
 def generate_key():
     """Note: THis shouldonly be used for local storage.
     """
-    password = getpass()
+    try:
+        password = getpass()
+    except Exception as e:
+        raise e
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
         length=32,
@@ -298,25 +302,36 @@ def handle_load_command(user_query_split: list, hide_html_comments: bool):
         fname = user_query_split[1]
         with open(fname, "r", encoding="utf-8") as f:
             conversation = f.read()
+            if not(encrypt) and conversation[:len(CONV_HEADER)] != CONV_HEADER :
+                encrypt = True
+                reprint(f"→ Encryption set to {encrypt}")
             if encrypt:
                 while True:
                     if (key is None):
-                        key = generate_key()
+                        try:
+                            key = generate_key()
+                        except KeyboardInterrupt:
+                            print("")
+                            return
+                        except EOFError:
+                            print("")
+                            raise EOFError
                     try:
                         conversation = key.decrypt(conversation).decode()
                         if conversation[:len(CONV_HEADER)] != CONV_HEADER :
                             raise "Invalid header"
-                        conversation = conversation[len(CONV_HEADER):]
                         break
                     except:
                         print("→ Unable to load the conversation; the password may be incorrect")
                         key = None
-            conversation = json.loads(conversation)
+            conversation = json.loads(conversation[len(CONV_HEADER):])
             reprint(f"→ File {fname} loaded successfully.")
             for content in conversation[-1]['content']:
                 if 'text' in content:
                     reprint(f"\n{AI_PROMPT_PREFIX}{content['text']}\n", hide_html_comments)
             return conversation
+    except EOFError:
+        raise EOFError
     except FileNotFoundError:
         raise Exception(f"File not found: {fname}")
     except PermissionError:
@@ -359,6 +374,11 @@ def handle_save_command(user_query_split: list, conversation: list):
         with open(fname, "w", encoding="utf-8") as file:
             file.write(conversation)
             reprint(f"→ Conversation saved to {fname}")
+    except KeyboardInterrupt:
+        print("")
+        return
+    except EOFError:
+        raise EOFError
     except FileNotFoundError:
         raise Exception(f"File not found: {fname}")
     except PermissionError:
@@ -403,6 +423,28 @@ def handle_temperature_command(user_query_split: list, old_temperature: float):
         return temperature
     except ValueError as e:
         raise ValueError(f"Invalid input for /temperature: {e}")
+
+def handle_reasoning_command(user_query_split: list, old_reasoning: bool):
+    """
+    Handle the /reasoning command to set reasoning to ON or OFF.
+    
+    Args:
+        user_query_split (list): A list of strings representing the user's query split by spaces.
+    
+    Returns:
+        bool: The new value.
+    
+    Raises:
+        ValueError: If the argument is missing or invalid.
+    """
+    try:
+        if len(user_query_split) < 2:
+            raise ValueError("Missing argument for /reasoning")
+        reasoning = user_query_split[1]
+        reprint(f"→ Reasoning set to {reasoning}")
+        return reasoning
+    except ValueError as e:
+        raise ValueError(f"Invalid input for /reasoning: {e}")
 
 def handle_use_functions_command(user_query_split: list):
     """
@@ -508,6 +550,7 @@ def process_user_query(user_query: str, use_functions: bool, allow_unsafe_fun: b
                 tools=tools,
                 input=conversation,
                 temperature=variables["temperature"],
+                reasoning={"effort": variables["reasoning"]},
             )
 
             if response.output_text:
@@ -590,6 +633,7 @@ def main(env_file=None, initial_commands=[]):
     load_env_var("api_key", variables)
     load_env_var("model", variables)
     load_env_var("base_url", variables)
+    load_env_var("reasoning", variables)
     load_env_var("temperature", variables, float)
     load_env_var("time_between_queries_s", variables)
     load_env_var("time_increment_s", variables)
@@ -676,6 +720,9 @@ def main(env_file=None, initial_commands=[]):
                 case '/temperature':
                     variables['temperature'] = handle_temperature_command(user_query_split, variables['temperature'])
                     continue
+                case '/reasoning':
+                    variables['reasoning'] = handle_reasoning_command(user_query_split, variables['reasoning'])
+                    continue
                 case '/use_functions':
                     use_functions = handle_use_functions_command(user_query_split)
                     continue
@@ -685,6 +732,8 @@ def main(env_file=None, initial_commands=[]):
                 case '/wd':
                     working_directory = handle_wd_command(user_query_split)
                     continue
+        except EOFError:
+            break
         except Exception as e:
             reprint(f"→ ERROR: {e}")
             continue

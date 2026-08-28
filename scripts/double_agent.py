@@ -9,7 +9,7 @@ import time
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir) 
-from main import END_OF_PROMPT, PROMPT_PREFIX
+from main import AI_PROMPT_PREFIX, END_OF_PROMPT, PROMPT_PREFIX
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -139,9 +139,9 @@ def main():
         print(f"{args.name_1}: {prompt}\n")
         for r in range(args.n_rounds):
             prompt = send_command_and_get_response(process_2, prompt, PROMPT_PREFIX)
-            print(f"{args.name_2}: {prompt}\n")
+            print(f"{args.name_2}: {prompt[len(AI_PROMPT_PREFIX):]}\n")
             prompt = send_command_and_get_response(process_1, prompt, PROMPT_PREFIX)
-            print(f"{args.name_1}: {prompt}\n")
+            print(f"{args.name_1}: {prompt[len(AI_PROMPT_PREFIX):]}\n")
 
     except Exception as e: 
         print(e)

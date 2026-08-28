@@ -73,7 +73,7 @@ The code requires the following environment variables:
 * `CXX`: Command to use for compiling C code (default: `g++`)
 * `FREQUENCY_PENALTY`: Frequency penalty to use (between -2 and 2)
 * `MODEL`: Name of the model to use
-* `PRESENCE_PENALTY`: Presence penalty to use (between -2 and 2)
+* `REASONING`: Reasoning effort (none, minimal, low, medium, high, or (for some newer models) xhigh)
 * `TEMPERATURE`: Sampling temperature to use (between 0 and 2)
 * `TIME_BETWEEN_QUERIES_S`: Initial time between queries in seconds
 * `TIME_INCREMENT_S`: Time increment when rate limit exceeded in seconds
@@ -128,6 +128,7 @@ The agent supports the following commands (all starting with `/`):
 * `/hide_html_comments [0,1]`: if 1, hides HTML comments from the terminal output.
 * `/load <filename>` : Load a conversation from a file. The second argument specifies if the file is encrypted (1) or not (0) (default: 0).
 * `/multiline [0,1]`: Turn multiline prompts on (1) or off (0) (default: off). If multiline prompts are on, you can send the prompt with `escape` followed by `enter`.
+* `/reasoning <value>`: Set reasoning effort.
 * `/reset_context` : Reset the context.
 * `/save <filename> [0,1]` : Save the current conversation in a file. The second argument specifies if the file should be encrypted (1) or not (0) (default: 0).
 * `/skills` : Copy the skills to the working directory.
